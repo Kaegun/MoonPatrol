@@ -1,0 +1,27 @@
+moonbuggy game
+ - draw the buggy
+ - make wheels bounce
+ 
+aliens 
+ - drop bombs
+ 
+bombs
+ - create craters
+
+boss
+ - big space ship
+
+start at a base
+finish at a base
+
+
+game project artefacts
+ - replace trees = rocks / mines
+ - replace clouds = planets and stars
+ - mountains = mountains
+
+pickup
+ - ammo box?
+   - gives you a boost to speed or firepower for a short time.
+
+https://retrogamer.net/retro_games80/moon-buggy
