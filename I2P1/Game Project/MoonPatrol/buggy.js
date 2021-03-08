@@ -6,7 +6,7 @@ class Buggy {
         this.ySpeed;
         this.colour;
         this.availableColours = [];
-        
+
         this.initialize = function () {
 
             this.availableColours.push(color(153, 50, 204)); //  DarkOrchid
@@ -24,7 +24,6 @@ class Buggy {
 
             stroke(88, 88, 88, 125);
             strokeWeight(2);
-            console.log(this.colour);
             fill(this.colour);
 
             //  Main Body
