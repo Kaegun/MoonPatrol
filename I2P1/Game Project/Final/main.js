@@ -75,10 +75,10 @@ function drawBuggy() {
     fill(153, 50, 204); //  DarkOrchid
     fill(85, 107, 47);  //  DarkOliveGreen
     fill(255, 140, 0);  //  DarkOrange
-    fill(95, 158, 160); //  CadetBlue
-    fill(25, 25, 112);  //  MidnightBlue
-    fill(47, 79, 79);   //  DarkSlateGrey
-    fill(128, 0, 0);    //  Maroon
+    // fill(95, 158, 160); //  CadetBlue
+    // fill(25, 25, 112);  //  MidnightBlue
+    // fill(47, 79, 79);   //  DarkSlateGrey
+    // fill(128, 0, 0);    //  Maroon
 
     //  Main Body
     beginShape();
