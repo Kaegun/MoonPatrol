@@ -8,34 +8,25 @@ https://freesound.org/
 
 */
 
-
-
-var jumpSound;
 var buggy;
+var sfx;
 
-function preload()
-{
-    soundFormats('mp3','wav');
-    
-    //load your sounds here
-    jumpSound = loadSound('assets/jump.wav');
-    jumpSound.setVolume(0.1);
+function preload() {
+    sfx = new Sfx();
+    sfx.initialize();
 }
 
-function setup()
-{
-	createCanvas(1400, 800);
+function setup() {
+    createCanvas(1400, 800);
 
     buggy = new Buggy();
     buggy.initialize();
 }
 
-function draw()
-{
+function draw() {
     buggy.draw();
 }
 
-function keyPressed()
-{
-    jumpSound.play();
+function keyPressed() {
+    sfx.playSound(0);
 }
