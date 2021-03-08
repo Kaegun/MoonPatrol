@@ -18,8 +18,11 @@ class Sfx {
 
         this.playSound = function (idx) {
             console.log(`playing sound: [${idx}]: [${this.sfx.length}]`);
+            console.log(`playing sound: ${this.sfx[idx]}`);
             if (idx < this.sfx.length)
                 this.sfx[idx].play();
+            
+            console.log('after playSound');
         }
     }
 }
