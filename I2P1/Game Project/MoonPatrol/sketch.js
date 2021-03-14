@@ -8,6 +8,9 @@ https://freesound.org/
 
 */
 
+var activeLevel = 0;
+var numLevels = 0;
+var levels = [];
 var buggy;
 var sfx;
 
@@ -19,14 +22,35 @@ function preload() {
 function setup() {
     createCanvas(1400, 800);
 
+    numLevels = createLevels(levels);
+
     buggy = new Buggy();
-    buggy.initialize();
+    buggy.initialize(levels[activeLevel].floorPos_y);
 }
 
 function draw() {
+    levels[activeLevel].draw();
+
     buggy.draw();
+
+    buggy.update();
 }
 
 function keyPressed() {
-    sfx.playSound(0);
+    // sfx.playSound(0);
+    /*
+        keys:
+            LeftCtrl = 17   - Fire1
+            LeftShift: 16   - Fire2
+            LeftArrow: 37   - Slow
+            RightArrow: 39  - Accelerate
+            Spacebar: 32    - Jump
+            S: 83           - Shield
+    */
+
+    switch (keyCode) {
+        default:
+            console.log(`key not handled: [${key}]`);
+            console.log(`keyCode not handled: [${keyCode}]`);
+    }
 }
