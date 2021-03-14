@@ -14,8 +14,10 @@ class Level {
         this.floorHeight;
         this.levelWidth;
 
-        this.starField = new StarField();
+        this.terrain;
+        this.starField;
         this.mountains = [];
+        this.rocks = [];
         this.craters = [];
 
         this.initialize = function (floorHeight, groundColor, skyColor) {
@@ -26,7 +28,12 @@ class Level {
 
             this.levelWidth = 2500; //  Need to decide on level size, etc.
 
+            //  terrain
+            this.terrain = new Terrain();
+            this.terrain.initialize(groundColor, this.levelWidth, this.floorPos_y);
+
             //  stars
+            this.starField = new StarField();
             this.starField.initialize();
 
             // mountains - Due to parralax scrolling I've not seen a second mountain yet.
@@ -38,6 +45,11 @@ class Level {
                 this.mountains.push(m);
             }
 
+            //  rock formations
+            var r = new Rock();
+            r.initialize(this.floorPos_y, this.levelWidth);
+            this.rocks.push(r);
+
             //  craters
             var crater = new Crater();
             crater.initialize(this.floorPos_y, this.floorHeight, this.skyColor);
@@ -47,14 +59,20 @@ class Level {
         this.draw = function () {
             background(this.skyColor); // fill the sky
 
-            noStroke();
-            fill(this.groundColor);
-            rect(0, this.floorPos_y, width, this.floorHeight); // draw the ground
-
             this.starField.draw();
+
+            // noStroke();
+            // fill(this.groundColor);
+            // rect(0, this.floorPos_y, width, this.floorHeight); // draw the ground
+
+            this.terrain.draw();
 
             for (var i = 0; i < this.mountains.length; i++) {
                 this.mountains[i].draw();
+            }
+
+            for (var i = 0; i < this.rocks.length; i++) {
+                this.rocks[i].draw();
             }
 
             for (var i = 0; i < this.craters.length; i++) {

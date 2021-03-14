@@ -16,11 +16,14 @@ class Crater {
                 var x = random(1, 5);
                 currentWidth += x;
                 var y = random(1, 5) * (currentWidth < craterWidth / 2 ? 1 : -1);
-                currentDepth = min(currentDepth + y, floorPos_y);
-                var p = { x: xPos + currentWidth, y: floorPos_y + currentDepth };
+                currentDepth += y;
+                var p = { x: xPos + currentWidth, y: (floorPos_y + currentDepth < floorPos_y ? floorPos_y : floorPos_y + currentDepth) };
                 this.points.push(p);
             }
-            console.table(this.points);
+
+            //  Make sure the crater lines up to the floor again.
+            if (this.points[this.points.length - 1].y > floorPos_y)
+                this.points[this.points.length - 1].y = floorPos_y;
         };
 
         this.draw = function () {
