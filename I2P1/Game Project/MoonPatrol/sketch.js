@@ -20,6 +20,7 @@ var activeLevel = 0;
 var numLevels = 0;
 var levels = [];
 var buggy;
+var enemies = [];
 var sfx;
 
 function preload() {
@@ -34,14 +35,26 @@ function setup() {
 
     buggy = new Buggy();
     buggy.initialize(levels[activeLevel].floorPos_y);
+
+    spawnUfoStandardWave(1, enemies);
 }
 
 function draw() {
+    //  call update on all objects to update positions
+    buggy.update();
+    for (var i = 0; i < enemies.length; i++) {
+        enemies[i].update();
+    }
+
+    //  call draw on all objects to draw all changes
     levels[activeLevel].draw();
+
+    for (var i = 0; i < enemies.length; i++) {
+        enemies[i].draw();
+    }
 
     buggy.draw();
 
-    buggy.update();
 }
 
 function keyPressed() {
@@ -54,13 +67,20 @@ function keyPressed() {
             RightArrow: 39  - Accelerate
             Spacebar: 32    - Jump
             S: 83           - Shield
+            M: 77           - Toggle music
     */
 
     switch (keyCode) {
         case 17:
             this.buggy.fireTurrets();
             break;
-        case 88:
+        case 83:
+            this.buggy.activateShield();
+            break;
+        case 77:    //  turn music playback on or off
+            this.levels[this.activeLevel].toggleMusic();
+            break;
+        case 88:    //  TODO: Temporary for testing
             this.buggy.destroy();
             break;
         default:

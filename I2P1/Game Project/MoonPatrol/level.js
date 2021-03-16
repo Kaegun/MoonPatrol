@@ -79,5 +79,9 @@ class Level {
                 this.craters[i].draw();
             }
         };
+
+        this.toggleMusic = function () {
+            //  do nothing yet
+        }
     }
 }

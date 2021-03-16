@@ -23,7 +23,7 @@ class Buggy {
         this.bulletsFwd = [];
         this.missiles = [];
         this.multishot = true;  //  single or multishot turret
-        this.shieldTimer = 0;
+        this.shield;
 
         //  states
         this.state = STATE_ALIVE;
@@ -123,6 +123,7 @@ class Buggy {
                 ellipse(x + this.wheels[i].x, y + this.wheels[i].y, this.wheels[i].rimDiameter);
             }
 
+            //  bullets
             for (var i = 0; i < this.bulletsUp.length; i++) {
                 stroke(255, 215, 0, 170);
                 fill(220, 20, 60);
@@ -141,6 +142,9 @@ class Buggy {
 
             for (var i = 0; i < this.bulletsFwd.length; i++)
                 rect(this.bulletsFwd[i].x, this.bulletsFwd[i].y, 10, 3);
+
+            if (this.shield && this.shield.alive())
+                this.shield.draw();
 
             pop();
         };
@@ -170,6 +174,9 @@ class Buggy {
                             this.wheels[i].y = random(47, 53);
                         }
                     }
+                    //  update the shield
+                    if (this.shield && this.shield.alive())
+                        this.shield.update();
                     break;
                 case STATE_DYING:
                     //  blow up the buggy
@@ -206,6 +213,11 @@ class Buggy {
             if (this.bulletsFwd.length < MAX_BULLETS) {
                 this.bulletsFwd.push({ x: this.position.x + 155, y: this.position.y + 18 });
             }
+        }
+
+        this.activateShield = function () {
+            this.shield = new Shield();
+            this.shield.initialize(this.position.x, this.position.y, 300, 80);
         }
 
         this.destroy = function () {
