@@ -14,9 +14,15 @@ class UfoStandard {
         this.sphereDiameter = 30;
         this.rotation = 0;
         this.direction = 1;
+        this.forwardSpeed = 4;
+        this.climbSpeed = 3;
+        this.max_y;
+        this.min_y;
 
         this.initialize = function (x, y) {
             this.position = createVector(x, y);
+            this.max_y = y + 50;
+            this.min_y = y - 50;
         };
 
         this.update = function () {
@@ -26,13 +32,12 @@ class UfoStandard {
                 this.direction = -1;
             else if (this.position.y < 120)
                 this.direction = 1;
-            this.position.add(createVector(3, 3 * this.direction));
+            this.position.add(createVector(this.forwardSpeed, this.climbSpeed * this.direction));
         };
 
         this.draw = function () {
             push();
 
-            // angleMode(DEGREES);
             translate(this.position.x, this.position.y);
             rotate(-this.rotation / 20, createVector(0, 0, 1));
             //  position offsets
