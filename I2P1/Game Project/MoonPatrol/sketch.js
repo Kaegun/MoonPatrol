@@ -21,6 +21,8 @@ var numLevels = 0;
 var levels = [];
 var buggy;
 var enemies = [];
+var pickups = [];
+
 var sfx;
 
 function preload() {
@@ -36,6 +38,10 @@ function setup() {
     buggy = new Buggy();
     buggy.initialize(levels[activeLevel].floorPos_y);
 
+    var pu = new Pickup();
+    pu.initialize(1000, levels[activeLevel].floorPos_y - 35, 0);
+    this.pickups.push(pu);
+
     spawnUfoStandardWave(1, enemies);
 }
 
@@ -45,12 +51,19 @@ function draw() {
     for (var i = 0; i < enemies.length; i++) {
         enemies[i].update();
     }
+    for (var i = 0; i < this.pickups.length; i++) {
+        this.pickups[i].update();
+    }
 
     //  call draw on all objects to draw all changes
     levels[activeLevel].draw();
 
     for (var i = 0; i < enemies.length; i++) {
         enemies[i].draw();
+    }
+
+    for (var i = 0; i < this.pickups.length; i++) {
+        this.pickups[i].draw();
     }
 
     buggy.draw();
