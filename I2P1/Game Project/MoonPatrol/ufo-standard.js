@@ -38,8 +38,9 @@ class UfoStandard {
         this.draw = function () {
             push();
 
+            //  PI * 2 rads = full rotation
             translate(this.position.x, this.position.y);
-            rotate(-this.rotation / 20, createVector(0, 0, 1));
+            rotate(-this.rotation * ((PI * 2)/90), createVector(0, 0, 1));
             //  position offsets
             var yOffset = sqrt(pow(this.sideLen, 2) + pow(this.sideLen / 2, 2)) / 2;
             var xOffset = this.sideLen / 2;

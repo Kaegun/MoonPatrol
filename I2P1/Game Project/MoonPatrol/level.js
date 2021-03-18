@@ -15,6 +15,7 @@ class Level {
         this.levelWidth;
 
         this.terrain;
+        this.bases = [];
         this.starField;
         this.mountains = [];
         this.rocks = [];
@@ -46,14 +47,19 @@ class Level {
             }
 
             //  rock formations
-            var r = new Rock();
-            r.initialize(this.floorPos_y, this.levelWidth);
-            this.rocks.push(r);
+            var rock = new Rock();
+            rock.initialize(this.floorPos_y, this.levelWidth);
+            this.rocks.push(rock);
 
             //  craters
             var crater = new Crater();
             crater.initialize(this.floorPos_y, this.floorHeight, this.skyColor);
             this.craters.push(crater);
+
+            //  base(s)
+            var base = new Base();
+            base.initialize(0, this.floorPos_y, "right", color(32, 178, 170), color(255, 99, 71));
+            this.bases.push(base);
         }
 
         this.draw = function () {
@@ -67,21 +73,23 @@ class Level {
 
             this.terrain.draw();
 
-            for (var i = 0; i < this.mountains.length; i++) {
-                this.mountains[i].draw();
-            }
+            this.drawObjects(this.mountains);
 
-            for (var i = 0; i < this.rocks.length; i++) {
-                this.rocks[i].draw();
-            }
+            this.drawObjects(this.rocks);
 
-            for (var i = 0; i < this.craters.length; i++) {
-                this.craters[i].draw();
+            this.drawObjects(this.craters);
+
+            this.drawObjects(this.bases);
+        };
+
+        this.drawObjects = function (objects) {
+            for (var i = 0; i < objects.length; i++) {
+                objects[i].draw();
             }
         };
 
         this.toggleMusic = function () {
             //  do nothing yet
-        }
+        };
     }
 }
