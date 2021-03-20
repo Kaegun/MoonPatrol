@@ -8,13 +8,16 @@ class Pickup {
     constructor() {
         this.position;
         this.pickupType;
+        this.scrollPos = 0;
 
         this.initialize = function (x, y, type) {
             this.position = createVector(x, y);
             this.pickupType = type;
         };
 
-        this.update = function () { };
+        this.update = function (scrollPos) {
+            this.scrollPos = -scrollPos;
+        };
 
         this.collision = function (x, y) {
             return dist(this.position.x, this.position.y, x, y) < 40;
@@ -23,6 +26,7 @@ class Pickup {
         this.draw = function () {
             push();
 
+            translate(this.scrollPos, 0);
             switch (this.pickupType) {
                 case PICKUP_GEM:
                     this.drawGem();

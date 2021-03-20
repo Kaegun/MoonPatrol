@@ -4,13 +4,15 @@ const STATE_ALIVE = 0;
 const STATE_DYING = 1;
 const STATE_DEAD = 2;
 const DEATH_LOOP = 40;
+const BUGGY_MAX_SPEED = 8;
+const BUGGY_MIN_SPEED = 2;
 
 class Buggy {
     constructor() {
 
         //  position is at the approximate center of the buggy, to help with collision and fall detection
         this.position;
-        this.speed;
+        this.speed = BUGGY_MIN_SPEED;
         this.frameCounter = 0;
 
         this.color;
@@ -200,6 +202,16 @@ class Buggy {
             }
         };
 
+        this.accelerate = function () {
+            this.speed = min(BUGGY_MAX_SPEED, this.speed + 2);
+        };
+
+        this.decelerate = function () {
+            this.speed = max(BUGGY_MIN_SPEED, this.speed - 2);
+        };
+
+        this.jump = function () { };
+
         this.fireTurrets = function () {
             //  Add bullet to up and forward turret (max 20 bullets)
             if (this.bulletsUp.length < MAX_BULLETS) {
@@ -213,17 +225,19 @@ class Buggy {
             if (this.bulletsFwd.length < MAX_BULLETS) {
                 this.bulletsFwd.push({ x: this.position.x + 155, y: this.position.y + 18 });
             }
-        }
+        };
+
+        this.fireMissile = function () { };
 
         this.activateShield = function () {
             this.shield = new Shield();
             this.shield.initialize(this.position.x, this.position.y, 300, 80);
-        }
+        };
 
         this.destroy = function () {
             this.state = STATE_DYING;
             this.lives = max(0, this.lives - 1);
-        }
+        };
 
         this.setActiveColor = function () {
             this.color = this.availableColors[this.colorIdx];

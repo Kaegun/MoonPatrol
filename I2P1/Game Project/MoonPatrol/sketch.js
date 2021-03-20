@@ -18,11 +18,11 @@ I added 4 types of enemies
 
 var activeLevel = 0;
 var numLevels = 0;
+var scrollPos = 0;
 var levels = [];
 var buggy;
 var enemies = [];
 var pickups = [];
-
 var sfx;
 
 function preload() {
@@ -46,14 +46,19 @@ function setup() {
 }
 
 function draw() {
+
+    scrollPos += this.buggy.speed;
+
     //  call update on all objects to update positions
-    buggy.update();
+    buggy.update(scrollPos);
     for (var i = 0; i < enemies.length; i++) {
-        enemies[i].update();
+        enemies[i].update(scrollPos);
     }
     for (var i = 0; i < this.pickups.length; i++) {
-        this.pickups[i].update();
+        this.pickups[i].update(scrollPos);
     }
+
+    this.levels[activeLevel].update(scrollPos);
 
     //  call draw on all objects to draw all changes
     levels[activeLevel].draw();
@@ -84,8 +89,20 @@ function keyPressed() {
     */
 
     switch (keyCode) {
+        case 37:
+            this.buggy.decelerate();
+            break;
+        case 39:
+            this.buggy.accelerate();
+            break;
+        case 32:
+            this.buggy.jump();
+            break;
         case 17:
             this.buggy.fireTurrets();
+            break;
+        case 16:
+            this.buggy.fireMissile();
             break;
         case 83:
             this.buggy.activateShield();

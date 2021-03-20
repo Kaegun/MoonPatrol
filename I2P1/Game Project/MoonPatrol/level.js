@@ -17,9 +17,12 @@ class Level {
         this.terrain;
         this.bases = [];
         this.starField;
+        this.planets = [];
         this.mountains = [];
         this.rocks = [];
         this.craters = [];
+
+        this.scrollPos = 0;
 
         this.initialize = function (floorHeight, groundColor, skyColor) {
             this.floorPos_y = height - floorHeight;
@@ -36,6 +39,11 @@ class Level {
             //  stars
             this.starField = new StarField();
             this.starField.initialize();
+
+            //  planets
+            var p = new Planet();
+            p.initialize(400, 200);
+            this.planets.push(p);
 
             // mountains - Due to parralax scrolling I've not seen a second mountain yet.
             var numMountains = random(1, 5);
@@ -58,28 +66,44 @@ class Level {
 
             //  base(s)
             var base = new Base();
-            base.initialize(0, this.floorPos_y, "right", color(32, 178, 170), color(255, 99, 71));
+            base.initialize(0, this.floorPos_y, "left", color(32, 178, 170), color(255, 99, 71));
             this.bases.push(base);
-        }
+        };
+
+        this.update = function (scrollPos) {
+            this.scrollPos = -scrollPos;
+        };
 
         this.draw = function () {
+
+            console.log(`scrollPos: ${this.scrollPos}`);
             background(this.skyColor); // fill the sky
 
+            push();
+            translate(this.scrollPos / 20), 0;
             this.starField.draw();
+            pop();
 
-            // noStroke();
-            // fill(this.groundColor);
-            // rect(0, this.floorPos_y, width, this.floorHeight); // draw the ground
+            this.drawObjects(this.planets);
 
+            push();
+            translate(this.scrollPos, 0);
             this.terrain.draw();
+            pop();
 
+            push();
+            translate(this.scrollPos / 10, 0);
             this.drawObjects(this.mountains);
+            pop();
 
+            push();
+            translate(this.scrollPos, 0);
             this.drawObjects(this.rocks);
 
             this.drawObjects(this.craters);
 
             this.drawObjects(this.bases);
+            pop();
         };
 
         this.drawObjects = function (objects) {

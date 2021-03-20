@@ -25,13 +25,11 @@ class Star {
         this.x = random(0, width);
         this.y = random(0, height / 2); //  Floor height might be needed here
 
-        this.initialize = function () {
-
-        }
+        this.initialize = function () { };
 
         this.draw = function () {
             fill(255);  //  randomize star colors and add some diffusion or other lighting effect
             ellipse(this.x, this.y, this.diameter);
-        }
+        };
     }
 }
