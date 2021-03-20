@@ -22,6 +22,9 @@ class Level {
         this.rocks = [];
         this.craters = [];
 
+        //  Testing particles
+        this.particleSystem;
+
         this.scrollPos = 0;
 
         this.initialize = function (floorHeight, groundColor, skyColor) {
@@ -68,10 +71,15 @@ class Level {
             var base = new Base();
             base.initialize(0, this.floorPos_y, "left", color(32, 178, 170), color(255, 99, 71));
             this.bases.push(base);
+
+            this.particleSystem = new ParticleEmitter();
+            this.particleSystem.initialize(width / 3 * 2, this.floorPos_y, 2, -2, color('orange'), 2, 200, 100);
         };
 
         this.update = function (scrollPos) {
             this.scrollPos = -scrollPos;
+
+            this.particleSystem.update();
         };
 
         this.draw = function () {
@@ -104,6 +112,8 @@ class Level {
 
             this.drawObjects(this.bases);
             pop();
+
+            this.particleSystem.draw();
         };
 
         this.drawObjects = function (objects) {
