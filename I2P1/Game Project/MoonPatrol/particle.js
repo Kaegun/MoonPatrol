@@ -58,7 +58,7 @@ class ParticleEmitter {
             this.numParticles = numParticles;
             this.lifetime = lifetime;
             this.direction = direction;
-            this.noloop = loop == 'undefined' ? false : (loop == PS_NOLOOP);
+            this.noloop = !loop ? false : (loop == PS_NOLOOP);
         };
 
         this.update = function () {

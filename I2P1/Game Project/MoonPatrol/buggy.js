@@ -16,6 +16,8 @@ class Buggy {
         this.frameCounter = 0;
 
         this.color;
+        this.cockpitColor;
+        this.cockpitLineColor;
         this.colorIdx;
         this.availableColors = [];
 
@@ -36,6 +38,8 @@ class Buggy {
         this.multishotTimer = 0;
         this.jumpJets = false;
         this.missileCount = 0;
+        this.acelerating = false;
+        this.decelerating = false;
 
         this.initialize = function (floorPos_y) {
 
@@ -49,6 +53,9 @@ class Buggy {
 
             this.colorIdx = 0;
             this.setActiveColor();
+
+            this.cockpitLineColor = color(255, 255, 255, 150);
+            this.cockpitColor = color(0, 255, 255, 150);
 
             //  Set floor height to initial value.
             this.position = createVector(width / 2, floorPos_y - 60);
@@ -67,7 +74,7 @@ class Buggy {
                 wheelDiameter: 45,
                 rimDiameter: 25
             };
-        }
+        };
 
         this.draw = function () {
 
@@ -96,8 +103,8 @@ class Buggy {
             endShape();
 
             //  Cockpit
-            stroke(255, 255, 255, 150);
-            fill(0, 255, 255, 150);
+            stroke(this.cockpitLineColor);
+            fill(this.cockpitColor);
             beginShape();
 
             vertex(x + 85, y + 5);
@@ -182,15 +189,30 @@ class Buggy {
 
             switch (this.state) {
                 case STATE_ALIVE:
-                    //  make the wheels wobble randomly - TODO: use the current speed to determine bounce speed
-                    if (++this.frameCounter % 10 == 0) {
+                    //  make the wheels wobble randomly, use the current speed to determine bounce speed
+                    var bounceSpeed = BUGGY_MAX_SPEED * 1.5 - this.speed;
+                    if (++this.frameCounter % bounceSpeed == 0) {
                         for (var i = 0; i < this.wheels.length; i++) {
                             this.wheels[i].y = random(47, 53);
                         }
                     }
+
                     //  update the shield
                     if (this.shield && this.shield.alive())
                         this.shield.update();
+
+                    if (this.acelerating) {
+                        this.speed = min(BUGGY_MAX_SPEED, this.speed + 2);
+                        if (this.position.x < width - width / 5)
+                            this.position.x += this.speed;
+                    }
+                    if (this.decelerating) {
+                        this.speed = max(BUGGY_MIN_SPEED, this.speed - 2);
+                        if (this.position.x > width / 5)
+                            this.position.x -= this.speed;
+                    }
+
+
                     break;
                 case STATE_DYING:
                     //  blow up the buggy
@@ -208,7 +230,16 @@ class Buggy {
                             this.dyingExplosion[i].update();
                         }
 
-                        this.color = lerpColor(this.availableColors[this.colorIdx], color(0, 0, 0), this.deathCounter / DEATH_LOOP);
+                        var lerpIdx = this.deathCounter / DEATH_LOOP;
+                        this.color = lerpColor(this.availableColors[this.colorIdx],
+                            color(0, 0, 0),
+                            lerpIdx);
+                        this.cockpitLineColor = lerpColor(color(255, 255, 255, 150),
+                            color(0, 0, 0),
+                            lerpIdx);
+                        this.cockpitColor = lerpColor(color(0, 255, 255, 150),
+                            color(0, 0, 0),
+                            lerpIdx);
                     }
                     else {
                         this.state = STATE_DEAD;
@@ -221,12 +252,12 @@ class Buggy {
             }
         };
 
-        this.accelerate = function () {
-            this.speed = min(BUGGY_MAX_SPEED, this.speed + 2);
+        this.accelerate = function (acelerating) {
+            this.acelerating = acelerating;
         };
 
-        this.decelerate = function () {
-            this.speed = max(BUGGY_MIN_SPEED, this.speed - 2);
+        this.decelerate = function (decelerating) {
+            this.decelerating = decelerating;
         };
 
         this.jump = function () { };

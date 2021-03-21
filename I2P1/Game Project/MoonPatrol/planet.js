@@ -3,12 +3,18 @@ class Planet {
         this.position;
         this.color;
         this.accentColor;
+        this.diameter;
+        this.xyOffset;
+        this.smallDiameter;
         this.scrollPos = 0;
 
-        this.initialize = function (x, y) {
+        this.initialize = function (x, y, color, accentColor, diameter) {
             this.position = createVector(x, y);
-            this.color = color(238, 130, 238);
-            this.accentColor = color(186, 85, 211);
+            this.color = color;
+            this.accentColor = accentColor;
+            this.diameter = diameter;
+            this.xyOffset = random(-this.diameter / 5, this.diameter / 5);
+            this.smallDiameter = random(this.diameter / 4, this.diameter / 6);
         };
 
         this.update = function (scrollPos) {
@@ -24,9 +30,12 @@ class Planet {
             stroke(this.accentColor);
             strokeWeight(1);
             fill(this.color);
-            ellipse(this.position.x, this.position.y, 280, 280);
+            ellipse(this.position.x, this.position.y, this.diameter, this.diameter);
             fill(this.accentColor);
-            ellipse(this.position.x - 60, this.position.y - 60, 80, 80);
+            ellipse(this.position.x + this.xyOffset,
+                this.position.y + this.xyOffset,
+                this.smallDiameter,
+                this.smallDiameter);
 
             pop();
         };

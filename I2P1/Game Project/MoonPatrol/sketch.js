@@ -35,10 +35,10 @@ function setup() {
     numLevels = createLevels(levels, sfx);
 
     buggy = new Buggy();
-    buggy.initialize(levels[activeLevel].floorPos_y);
+    buggy.initialize(levels[activeLevel].floorPosY);
 
     var pu = new Pickup();
-    pu.initialize(1000, levels[activeLevel].floorPos_y - 35, 0);
+    pu.initialize(1000, levels[activeLevel].floorPosY - 35, 0);
     pickups.push(pu);
 
     spawnUfoStandardWave(1, enemies);
@@ -95,10 +95,10 @@ function keyPressed() {
             //  continue / start / next level, etc.
             break;
         case 37:
-            buggy.decelerate();
+            buggy.decelerate(true);
             break;
         case 39:
-            buggy.accelerate();
+            buggy.accelerate(true);
             break;
         case 32:
             buggy.jump();
@@ -113,8 +113,8 @@ function keyPressed() {
             buggy.activateShield();
             break;
         case 77:    //  turn music playback on or off
-            levels[activeLevel].toggleMusic();
             sfx.toggleSound();
+            levels[activeLevel].toggleMusic();
             break;
         case 88:    //  TODO: Temporary for testing
             buggy.destroy();
@@ -132,10 +132,10 @@ function keyReleased() {
             //  continue / start / next level, etc.
             break;
         case 37:
-            //       this.buggy.decelerate();
+            this.buggy.decelerate(false);
             break;
         case 39:
-            //      this.buggy.accelerate();
+            this.buggy.accelerate(false);
             break;
         case 32:
             //         this.buggy.jump();
