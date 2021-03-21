@@ -11,3 +11,10 @@ I added 4 types of enemies
  - Mothership
 
  Added a base, some platforms and a shield mechanism.
+
+ #Citations
+  - Fonts
+    - https://www.fontspace.com/category/sci-fi
+      - Moonhouse (100% Free)
+  - Sound Effects
+    - From GDC Sound Library

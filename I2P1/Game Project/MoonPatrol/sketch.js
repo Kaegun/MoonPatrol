@@ -12,20 +12,27 @@ var enemies = [];
 var pickups = [];
 var sfx;
 
+var pause = true;
+
 //  player
 var buggy;
 var hud;
 var score = 0;
 
 function preload() {
+    //  Loading Sound Effects and Music
     sfx = new Sfx();
     sfx.initialize();
+
+    //  Loading Hud and Fonts
+    hud = new Hud();
+    hud.initialize();
 }
 
 function setup() {
-    createCanvas(1400, 800);
+    createCanvas(windowWidth, windowHeight - 3);
 
-    numLevels = createLevels(levels);
+    numLevels = createLevels(levels, sfx);
 
     buggy = new Buggy();
     buggy.initialize(levels[activeLevel].floorPos_y);
@@ -35,9 +42,6 @@ function setup() {
     pickups.push(pu);
 
     spawnUfoStandardWave(1, enemies);
-
-    hud = new Hud();
-    hud.initialize();
 }
 
 function draw() {
@@ -65,7 +69,7 @@ function draw() {
     }
 
     for (var i = 0; i < this.pickups.length; i++) {
-        this.pickups[i].draw();
+        pickups[i].draw();
     }
 
     buggy.draw();
@@ -87,29 +91,69 @@ function keyPressed() {
     */
 
     switch (keyCode) {
+        case 13:
+            //  continue / start / next level, etc.
+            break;
         case 37:
-            this.buggy.decelerate();
+            buggy.decelerate();
             break;
         case 39:
-            this.buggy.accelerate();
+            buggy.accelerate();
             break;
         case 32:
-            this.buggy.jump();
+            buggy.jump();
             break;
         case 17:
-            this.buggy.fireTurrets();
+            buggy.fireTurrets();
             break;
         case 16:
-            this.buggy.fireMissile();
+            buggy.fireMissile();
             break;
         case 83:
-            this.buggy.activateShield();
+            buggy.activateShield();
             break;
         case 77:    //  turn music playback on or off
-            this.levels[this.activeLevel].toggleMusic();
+            levels[activeLevel].toggleMusic();
+            sfx.toggleSound();
             break;
         case 88:    //  TODO: Temporary for testing
-            this.buggy.destroy();
+            buggy.destroy();
+            break;
+        default:
+            console.log(`key not handled: [${key}]`);
+            console.log(`keyCode not handled: [${keyCode}]`);
+            break;
+    }
+}
+
+function keyReleased() {
+    switch (keyCode) {
+        case 13:
+            //  continue / start / next level, etc.
+            break;
+        case 37:
+            //       this.buggy.decelerate();
+            break;
+        case 39:
+            //      this.buggy.accelerate();
+            break;
+        case 32:
+            //         this.buggy.jump();
+            break;
+        case 17:
+            //       this.buggy.fireTurrets();
+            break;
+        case 16:
+            //         this.buggy.fireMissile();
+            break;
+        case 83:
+            //          this.buggy.activateShield();
+            break;
+        case 77:    //  turn music playback on or off
+            //        this.levels[this.activeLevel].toggleMusic();
+            break;
+        case 88:    //  TODO: Temporary for testing
+            //        this.buggy.destroy();
             break;
         default:
             console.log(`key not handled: [${key}]`);

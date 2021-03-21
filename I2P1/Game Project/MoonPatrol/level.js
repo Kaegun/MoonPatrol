@@ -1,6 +1,6 @@
-function createLevels(levels) {
+function createLevels(levels, sfx) {
     var l = new Level();
-    l.initialize(300, color(105, 105, 105), color(0, 0, 0));
+    l.initialize(300, color(105, 105, 105), color(0, 0, 0), sfx);
     levels.push(l);
 
     return levels.length;
@@ -22,16 +22,20 @@ class Level {
         this.rocks = [];
         this.craters = [];
 
+        this.sfx;
+        this.playingMusic = true;
+
         //  Testing particles
         this.particleSystems = [];
 
         this.scrollPos = 0;
 
-        this.initialize = function (floorHeight, groundColor, skyColor) {
+        this.initialize = function (floorHeight, groundColor, skyColor, sfx) {
             this.floorPos_y = height - floorHeight;
             this.floorHeight = floorHeight;
             this.groundColor = groundColor;
             this.skyColor = skyColor;
+            this.sfx = sfx;
 
             this.levelWidth = width * 10; //  Need to decide on level size, etc.
 
@@ -79,6 +83,10 @@ class Level {
             var ps = new ParticleEmitter();
             ps.initialize(width / 3 * 2, this.floorPos_y, 6, 6, color(255, 165, 0, 100), 12, 600, 250, PS_MIDDLE, PS_NOLOOP);
             this.particleSystems.push(ps);
+
+            //  Start level bg music
+            this.sfx.playMusic("level1bgmusic");
+
         };
 
         this.update = function (scrollPos) {
@@ -128,7 +136,18 @@ class Level {
         };
 
         this.toggleMusic = function () {
-            //  do nothing yet
+            console.log(`toggleMusic: ${this.sfx.soundOn} - ${this.playingMusic}`);
+            if (this.sfx.playingMusic) {
+                console.log('level stopping music');
+                this.sfx.stopMusic("level1bgmusic");
+
+            }
+            else {
+                this.sfx.playMusic("level1bgmusic");
+                console.log('level starting music');
+            }
+
+            this.playingMusic = !this.playingMusic;
         };
     }
 }

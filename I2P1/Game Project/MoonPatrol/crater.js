@@ -7,11 +7,14 @@ class Crater {
 
         this.initialize = function (floorPos_y, floorHeight, backgroundColor) {
             this.color = backgroundColor;
-            var depth = floorHeight * 0.33 + random(-15, 15);
+            var depth = floorHeight * 0.4 + random(-15, 15);
             var xPos = width / 2 + random(-100, 100);
             var craterWidth = depth * 2;
             var currentWidth = 0;
             var currentDepth = 0;
+
+            this.points.push({ x: xPos, y: floorPos_y });
+
             while (currentWidth < craterWidth) {
                 var x = random(1, 5);
                 currentWidth += x;
