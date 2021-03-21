@@ -44,7 +44,6 @@ class UfoStandard {
             //  position offsets
             var yOffset = sqrt(pow(this.sideLen, 2) + pow(this.sideLen / 2, 2)) / 2;
             var xOffset = this.sideLen / 2;
-            console.log(`${pow(this.sideLen, 2)} | ${pow(this.sideLen / 2, 2)} | ${yOffset}`);
 
             //  connecting struts
             beginShape();

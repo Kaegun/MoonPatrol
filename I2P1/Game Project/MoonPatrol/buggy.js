@@ -24,12 +24,18 @@ class Buggy {
         this.bulletsUp = [];
         this.bulletsFwd = [];
         this.missiles = [];
-        this.multishot = true;  //  single or multishot turret
         this.shield;
+
+        //  Create a number of particle emitters to simulate exploding.
+        this.dyingExplosion = [];
 
         //  states
         this.state = STATE_ALIVE;
         this.deathCounter = 0;
+        this.multishot = false;  //  single or multishot turret
+        this.multishotTimer = 0;
+        this.jumpJets = false;
+        this.missileCount = 0;
 
         this.initialize = function (floorPos_y) {
 
@@ -148,6 +154,12 @@ class Buggy {
             if (this.shield && this.shield.alive())
                 this.shield.draw();
 
+            if (this.state == STATE_DYING) {
+                for (var i = 0; i < this.dyingExplosion.length; i++) {
+                    this.dyingExplosion[i].draw();
+                }
+            }
+
             pop();
         };
 
@@ -191,13 +203,20 @@ class Buggy {
                         this.wheels[1].y += wheel_delta_y;
                         this.wheels[2].x += 10;
                         this.wheels[2].y += wheel_delta_y;
+
+                        for (var i = 0; i < this.dyingExplosion.length; i++) {
+                            this.dyingExplosion[i].update();
+                        }
+
+                        this.color = lerpColor(this.availableColors[this.colorIdx], color(0, 0, 0), this.deathCounter / DEATH_LOOP);
                     }
                     else {
                         this.state = STATE_DEAD;
-                        this.deathCounter = 0;
                     }
                     break;
                 case STATE_DEAD:
+                    this.deathCounter = 0;
+                    //  Reset explosion, etc.
                     break;
             }
         };
@@ -237,6 +256,13 @@ class Buggy {
         this.destroy = function () {
             this.state = STATE_DYING;
             this.lives = max(0, this.lives - 1);
+
+            var e = new ParticleEmitter();
+            e.initialize(this.position.x, this.position.y, 3, 3, color(128, 128, 128, 100), 30, 400, 500, PS_MIDDLE, PS_NOLOOP);
+            this.dyingExplosion.push(e);
+            e = new ParticleEmitter();
+            e.initialize(this.position.x, this.position.y, 6, 6, color(255, 165, 0, 100), 12, 600, 250, PS_MIDDLE, PS_NOLOOP);
+            this.dyingExplosion.push(e);
         };
 
         this.setActiveColor = function () {

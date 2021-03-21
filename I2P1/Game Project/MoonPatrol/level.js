@@ -23,7 +23,7 @@ class Level {
         this.craters = [];
 
         //  Testing particles
-        this.particleSystem;
+        this.particleSystems = [];
 
         this.scrollPos = 0;
 
@@ -33,7 +33,7 @@ class Level {
             this.groundColor = groundColor;
             this.skyColor = skyColor;
 
-            this.levelWidth = 2500; //  Need to decide on level size, etc.
+            this.levelWidth = width * 10; //  Need to decide on level size, etc.
 
             //  terrain
             this.terrain = new Terrain();
@@ -72,19 +72,23 @@ class Level {
             base.initialize(0, this.floorPos_y, "left", color(32, 178, 170), color(255, 99, 71));
             this.bases.push(base);
 
-            this.particleSystem = new ParticleEmitter();
-            this.particleSystem.initialize(width / 3 * 2, this.floorPos_y, 2, -2, color('orange'), 2, 200, 100);
+            //  Temp code, make fire looking thing with smoke
+            var ps = new ParticleEmitter();
+            ps.initialize(width / 3 * 2, this.floorPos_y, 3, 3, color(128, 128, 128, 100), 30, 400, 500, PS_MIDDLE, PS_NOLOOP);
+            this.particleSystems.push(ps);
+            var ps = new ParticleEmitter();
+            ps.initialize(width / 3 * 2, this.floorPos_y, 6, 6, color(255, 165, 0, 100), 12, 600, 250, PS_MIDDLE, PS_NOLOOP);
+            this.particleSystems.push(ps);
         };
 
         this.update = function (scrollPos) {
             this.scrollPos = -scrollPos;
 
-            this.particleSystem.update();
+            for (var i = 0; i < this.particleSystems.length; i++)
+                this.particleSystems[i].update();
         };
 
         this.draw = function () {
-
-            console.log(`scrollPos: ${this.scrollPos}`);
             background(this.skyColor); // fill the sky
 
             push();
@@ -113,7 +117,8 @@ class Level {
             this.drawObjects(this.bases);
             pop();
 
-            this.particleSystem.draw();
+            for (var i = 0; i < this.particleSystems.length; i++)
+                this.particleSystems[i].draw();
         };
 
         this.drawObjects = function (objects) {

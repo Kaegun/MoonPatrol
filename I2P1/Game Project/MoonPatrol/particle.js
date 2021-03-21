@@ -1,3 +1,12 @@
+//  Properly designed we can use the particle system for smoke, jump trails, explosions and volcanic eruptions.
+//  Need to give the PS a direction, and a magnitude.
+const PS_UP = 0;
+const PS_DOWN = 1;
+const PS_LEFT = 2;
+const PS_RIGHT = 3;
+const PS_MIDDLE = 4;
+const PS_NOLOOP = 1;
+
 class Particle {
     constructor() {
         this.position;
@@ -20,6 +29,7 @@ class Particle {
         };
 
         this.draw = function () {
+            noStroke();
             fill(this.color);
             ellipse(this.position.x, this.position.y, this.size, this.size);
         };
@@ -34,16 +44,21 @@ class ParticleEmitter {
         this.size;
         this.lifetime;
         this.numParticles;
+        this.created = false;
+        this.direction = PS_UP;
+        this.noloop = false;
 
         this.particles = [];
 
-        this.initialize = function (x, y, xSpeed, ySpeed, color, size, numParticles, lifetime) {
+        this.initialize = function (x, y, xSpeed, ySpeed, color, size, numParticles, lifetime, direction, loop) {
             this.position = createVector(x, y);
             this.velocity = createVector(xSpeed, ySpeed);
             this.color = color;
             this.size = size;
             this.numParticles = numParticles;
             this.lifetime = lifetime;
+            this.direction = direction;
+            this.noloop = loop == 'undefined' ? false : (loop == PS_NOLOOP);
         };
 
         this.update = function () {
@@ -58,28 +73,58 @@ class ParticleEmitter {
 
         this.draw = function () {
             for (var i = 0; i < this.particles.length; i++) {
-                {
-                    this.particles[i].draw();
-                }
+                this.particles[i].draw();
             }
         };
 
+        this.calculateParticleSpeed = function () {
+            //  speeds vary depending on direction of particle system
+            var pSpeedX = 0, pSpeedY = 0;
+            switch (this.direction) {
+                case PS_UP:
+                    pSpeedX = random(-this.velocity.x, this.velocity.x);
+                    pSpeedY = -random(0, this.velocity.y);
+                    break;
+                case PS_DOWN:
+                    pSpeedX = random(-this.velocity.x, this.velocity.x);
+                    pSpeedY = -random(0, this.velocity.y);
+                    break;
+                case PS_LEFT:
+                    pSpeedX = -random(0, this.velocity.x);
+                    pSpeedY = random(-this.velocity.y, this.velocity.y);
+                    break;
+                case PS_RIGHT:
+                    pSpeedX = random(0, this.velocity.x);
+                    pSpeedY = random(-this.velocity.y, this.velocity.y);
+                    break;
+                case PS_MIDDLE:
+                    pSpeedX = random(-this.velocity.x, this.velocity.x);
+                    pSpeedY = random(-this.velocity.y, this.velocity.y);
+                    break;
+            }
+
+            return createVector(pSpeedX, pSpeedY);
+        };
+
         this.createParticles = function () {
-            for (var i = 0; i < this.numParticles - this.particles.length; i++) {
-                var p = new Particle();
-                var px = random(this.position.x - 5, this.position.x + 5);
-                var py = random(this.position.y - 5, this.position.y + 5);
-                var pSpeedX = random(-this.velocity.x, this.velocity.x);
-                var pSpeedY = random(this.velocity.y - 2, this.velocity.y + 2);
-                var pSize = random(max(this.size, this.size - 3), this.size + 3);
-                p.initialize(px, py, pSpeedX, pSpeedY, this.color, pSize);
-                this.particles.push(p);
+            if (!this.noloop || this.noloop && !this.created) {
+                for (var i = this.particles.length; i < this.numParticles; i++) {
+                    var p = new Particle();
+                    var px = random(this.position.x - 5, this.position.x + 5);
+                    var py = random(this.position.y - 5, this.position.y + 5);
+
+                    var pSpeed = this.calculateParticleSpeed();
+                    var pSize = random(1, this.size);
+                    p.initialize(px, py, pSpeed.x, pSpeed.y, this.color, pSize);
+                    this.particles.push(p);
+                }
+                this.created = true;
             }
         };
 
         this.killParticles = function () {
             for (var i = this.particles.length - 1; i >= 0; i--) {
-                if (this.particles[i].age > this.lifetime)
+                if (this.particles[i].age > random(0, this.lifetime))
                     this.particles.splice(i, 1);
             }
         };

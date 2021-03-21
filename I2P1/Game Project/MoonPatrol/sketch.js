@@ -1,18 +1,6 @@
 /*
 
-After the mid-term, I decided to change my project up and implement a Moon Patrol clone.
-I replaced the character with the Moon Patrol ATB, trees became rock formations, clouds became moons and planets,
-and I added some flair to the mountains. The pick-ups are drops from shooting the Recon Fighter.
-
-I've added sound (from a royalty-free library that I downloaded - citations needed?)
-
-I added 4 types of enemies
- - Standard fighters
- - Bombers
- - Recon Fighter (drops a special and plays a sound to warn the player of it coming)
- - Mothership
-
- Added a base, some platforms and a shield mechanism.
+See Readme.md
 
 */
 
@@ -20,10 +8,14 @@ var activeLevel = 0;
 var numLevels = 0;
 var scrollPos = 0;
 var levels = [];
-var buggy;
 var enemies = [];
 var pickups = [];
 var sfx;
+
+//  player
+var buggy;
+var hud;
+var score = 0;
 
 function preload() {
     sfx = new Sfx();
@@ -40,9 +32,12 @@ function setup() {
 
     var pu = new Pickup();
     pu.initialize(1000, levels[activeLevel].floorPos_y - 35, 0);
-    this.pickups.push(pu);
+    pickups.push(pu);
 
     spawnUfoStandardWave(1, enemies);
+
+    hud = new Hud();
+    hud.initialize();
 }
 
 function draw() {
@@ -55,10 +50,12 @@ function draw() {
         enemies[i].update(scrollPos);
     }
     for (var i = 0; i < this.pickups.length; i++) {
-        this.pickups[i].update(scrollPos);
+        pickups[i].update(scrollPos);
     }
 
-    this.levels[activeLevel].update(scrollPos);
+    levels[activeLevel].update(scrollPos);
+
+    hud.update(score);
 
     //  call draw on all objects to draw all changes
     levels[activeLevel].draw();
@@ -73,6 +70,7 @@ function draw() {
 
     buggy.draw();
 
+    hud.draw();
 }
 
 function keyPressed() {
