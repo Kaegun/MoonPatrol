@@ -1,0 +1,31 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+steps:
+# - task: CopyFiles@2
+#   inputs:
+#     SourceFolder: '/I2P1/Game Project/MoonPatrol'
+#     Contents: '**'
+#     TargetFolder: '$(Build.ArtifactStagingDirectory)/src'
+#     CleanTargetFolder: true
+#     OverWrite: true
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     PathtoPublish: '$(Build.ArtifactStagingDirectory)/src'
+#     ArtifactName: 'moonpatrol'
+#     publishLocation: 'Container'
+- task: AzureFileCopy@4
+  inputs:
+    SourcePath: '$(Build.Repository.LocalPath)/I2P1/Game Project/MoonPatrol'
+    azureSubscription: 'VS - JU(e87ae4a9-9432-47fb-8597-f6b84b3ddffd)'
+    Destination: 'AzureBlob'
+    storage: 'uoli2p1moonpatrol'
+    ContainerName: '$web'
