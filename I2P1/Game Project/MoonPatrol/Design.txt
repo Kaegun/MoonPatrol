@@ -31,10 +31,19 @@ buggy can move forward and back at a speed, even though scrolling is always forw
 
 
 fix waves
-draw pickups
+xx draw pickups
 draw other ufos
 draw craters
 handle crater bombs
 ufos can shoot
 hud stuffs for buggy stuffs
+ - missiles
+ - jumpJets
+ - multishot
+ - shield
 handle death
+handle level transitions
+collision 
+ - bullets to buggy
+
+level transitions

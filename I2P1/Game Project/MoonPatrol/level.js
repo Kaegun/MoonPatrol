@@ -1,5 +1,6 @@
 var levelDesigns = [{
     floorHeight: 0.3,
+    startX: 150,
     width: 10,
     bgColor: { r: 105, g: 105, b: 105 },
     skyColor: { r: 25, g: 25, b: 112 },
@@ -27,6 +28,7 @@ class Level {
         this.groundColor;
         this.skyColor;
         this.floorPosY;
+        this.startX;
         this.floorHeight;
         this.levelWidth;
 
@@ -50,6 +52,7 @@ class Level {
 
             this.levelNumber = idx + 1;
             this.floorHeight = height * levelDesigns[idx].floorHeight;
+            this.startX = levelDesigns[idx].startX;
             this.floorPosY = height - this.floorHeight;
             this.groundColor = color(levelDesigns[idx].bgColor.r, levelDesigns[idx].bgColor.g, levelDesigns[idx].bgColor.b);
             this.skyColor = color(levelDesigns[idx].skyColor.r, levelDesigns[idx].skyColor.g, levelDesigns[idx].skyColor.b);

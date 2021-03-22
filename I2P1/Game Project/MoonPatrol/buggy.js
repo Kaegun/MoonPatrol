@@ -15,6 +15,7 @@ class Buggy {
 
         //  position is at the approximate center of the buggy, to help with collision and fall detection
         this.position;
+        this.worldPosition;
         this.velocity;
         this.floorPosY;
         this.speed = BUGGY_MIN_SPEED;
@@ -40,17 +41,20 @@ class Buggy {
         //  states
         this.state = BUGGY_STATE_ALIVE;
         this.deathCounter = 0;
-        this.multishot = true;  //  single or multishot turret
+        this.multishot = false;  //  single or multishot turret
+        this.jumpJets = false;
         this.multishotTimer = 0;
         this.missileCount = 0;
+        this.shieldTimer = 0;
+        this.jumpJetsTimer = 0;
         this.acelerating = false;
         this.decelerating = false;
-        this.jumpJets = false;
         this.jumping = false;
         this.falling = false;
         this.plummeting = false;
+        this.lives = 3;
 
-        this.initialize = function (floorPosY, sfx) {
+        this.initialize = function (startX, floorPosY, sfx) {
 
             this.sfx = sfx;
             this.availableColors.push(color(153, 50, 204)); //  DarkOrchid
@@ -69,7 +73,8 @@ class Buggy {
 
             //  Set floor height to initial value.
             this.floorPosY = floorPosY - BUGGY_CENTER_HEIGHT;
-            this.position = createVector(width / 2, this.floorPosY);
+            this.position = createVector(startX, this.floorPosY);
+            this.worldPosition = this.position.copy();
             this.velocity = createVector(0, 0);
 
             this.wheels.push(this.createWheel(20));
@@ -182,7 +187,8 @@ class Buggy {
             pop();
         };
 
-        this.update = function () {
+        this.update = function (scrollPos) {
+            this.worldPosition.x = this.position.x + scrollPos;
             //  Move any bullets or other projectiles
             for (var i = this.bulletsUp.length - 1; i >= 0; i--) {
                 var velocity = createVector(this.bulletsUp[i].xVelocity, -20);
@@ -359,8 +365,9 @@ class Buggy {
         this.fireMissile = function () { };
 
         this.activateShield = function () {
-            this.shield = new Shield();
-            this.shield.initialize(this.position.x, this.position.y, 300, 80);
+            if (!this.shield)
+                this.shield = new Shield();
+            this.shield.initialize(this.position.x, this.position.y, this.shieldTimer, 80);
         };
 
         this.destroy = function () {
@@ -377,9 +384,32 @@ class Buggy {
             this.color = this.availableColors[this.colorIdx];
         };
 
+        this.setPowerUp = function (pickup) {
+            switch (pickup.pickupType) {
+                case PICKUP_LIFE:
+                    this.lives++;
+                    break;
+                case PICKUP_MISSILES:
+                    this.missileCount += pickup.getValue();
+                    break;
+                case PICKUP_MULTISHOT:
+                    this.multishot = true;
+                    this.multishotTimer += pickup.getValue();
+                    break;
+                case PICKUP_SHIELD:
+                    this.shieldTimer += pickup.getValue();
+                    break;
+                case PICKUP_JUMPJETS:
+                    this.jumpJets = true;
+                    this.jumpJetsTimer += pickup.getValue();
+                    break;
+            }
+        };
+
         //  Need to display health too
         this.getShieldTimer = function () {
-            return this.shield && this.shield.alive() ? this.shield.lifetime : 0;
+          //  console.log(`${this.shield} && ${this.shield.alive()}) ? ${this.shield.lifetime} : ${this.shieldTimer}`);
+            return (this.shield && this.shield.alive()) ? this.shield.lifetime : this.shieldTimer;
         };
 
         this.getMultishotTimer = function () {
@@ -391,7 +421,7 @@ class Buggy {
         };
 
         this.getJumpJetTimer = function () {
-            return this.jumpJets ? this.getJumpJetTimer : 0;
+            return this.jumpJets ? this.jumpJetsTimer : 0;
         };
     }
 }

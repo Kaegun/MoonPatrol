@@ -26,7 +26,6 @@ var pause = true;
 var buggy;
 var hud;
 var score = 0;
-var lives = 3;
 
 function preload() {
     //  Loading Sound Effects and Music
@@ -45,11 +44,15 @@ function setup() {
 
     //  Move this to an initialize level method
     buggy = new Buggy();
-    buggy.initialize(levels[activeLevel].floorPosY, sfx);
+    buggy.initialize(levels[activeLevel].startX, levels[activeLevel].floorPosY, sfx);
 
-    var pu = new Pickup();
-    pu.initialize(1000, levels[activeLevel].floorPosY - 35, 0);
-    pickups.push(pu);
+    var puStartX = 1000;
+    for (var pp = 0; pp <= PICKUP_JUMPJETS; pp++) {
+        var pu = new Pickup();
+        pu.initialize(puStartX, levels[activeLevel].floorPosY - 35, pp, sfx);
+        pickups.push(pu);
+        puStartX += 200;
+    }
 }
 
 function draw() {
@@ -74,6 +77,17 @@ function checkCollisions() {
     for (var i = 0; i < levels[activeLevel].enemies.length; i++) {
         checkEnemyCollision(levels[activeLevel].enemies[i], buggy.bulletsUp);
     }
+
+    for (var i = pickups.length - 1; i >= 0; i--) {
+        if (pickups[i].collision(buggy.worldPosition)) {
+            pickups[i].playCollectedSound();
+            if (pickups[i].pickupType == PICKUP_GEM)
+                score += pickups[i].getValue();
+            else
+                buggy.setPowerUp(pickups[i]);
+            pickups.splice(i, 1);
+        }
+    }
 }
 
 function checkEnemyCollision(enemy, projectiles) {
@@ -96,7 +110,7 @@ function update() {
 
     levels[activeLevel].update(scrollPos);
 
-    hud.update(score, lives,
+    hud.update(score, buggy.lives,
         buggy.getMissileCount(),
         buggy.getShieldTimer(),
         buggy.getMultishotTimer(),

@@ -46,11 +46,11 @@ class Shield {
 
                 var smaller = this.diameter * 2 / 3;
                 fill(230, 230, 250, 70);
-                ellipse(this.position.x, this.position.y, this.diameter);
+                ellipse(this.position.x, this.position.y, smaller);
 
                 var smallest = smaller * 2 / 3;
                 fill(240, 248, 255, 80);
-                ellipse(this.position.x, this.position.y, this.diameter);
+                ellipse(this.position.x, this.position.y, smallest);
 
                 pop();
             }
