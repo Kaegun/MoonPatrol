@@ -1,5 +1,5 @@
 var levelDesigns = [{
-    floorHeight: 300,
+    floorHeight: 0.3,
     width: 10,
     bgColor: { r: 105, g: 105, b: 105 },
     skyColor: { r: 25, g: 25, b: 112 },
@@ -8,7 +8,8 @@ var levelDesigns = [{
     rocks: [],
     mountains: [],
     craters: [],
-
+    enemies: [{ type: UFO_STANDARD, count: 3, waves: 2, },
+    { type: UFO_SCOUT, count: 1, waves: 2, }],
 },];
 
 function createLevels(levels, sfx) {
@@ -36,25 +37,26 @@ class Level {
         this.mountains = [];
         this.rocks = [];
         this.craters = [];
+        this.enemies = [];
+        this.ufoSpawner;
 
         this.sfx;
         this.playingMusic = true;
-
-        //  Testing particles
-        this.particleSystems = [];
+        this.bgMusic;
 
         this.scrollPos = 0;
 
         this.initialize = function (idx, sfx) {
 
             this.levelNumber = idx + 1;
-            this.floorPosY = height - levelDesigns[idx].floorHeight;
-            this.floorHeight = levelDesigns[idx].floorHeight;
+            this.floorHeight = height * levelDesigns[idx].floorHeight;
+            this.floorPosY = height - this.floorHeight;
             this.groundColor = color(levelDesigns[idx].bgColor.r, levelDesigns[idx].bgColor.g, levelDesigns[idx].bgColor.b);
             this.skyColor = color(levelDesigns[idx].skyColor.r, levelDesigns[idx].skyColor.g, levelDesigns[idx].skyColor.b);
             this.sfx = sfx;
 
             this.levelWidth = width * levelDesigns[idx].width;
+            this.bgMusic = `level${idx + 1}bgmusic`;
 
             //  stars
             this.starField = new StarField();
@@ -99,24 +101,25 @@ class Level {
             base.initialize(0, this.floorPosY, "left", color(32, 178, 170), color(255, 99, 71));
             this.bases.push(base);
 
-            //  Temp code, make fire looking thing with smoke
-            var ps = new ParticleEmitter();
-            ps.initialize(width / 3 * 2, this.floorPosY, 3, 3, color(128, 128, 128, 100), 30, 400, 500, PS_MIDDLE, PS_NOLOOP);
-            this.particleSystems.push(ps);
-            var ps = new ParticleEmitter();
-            ps.initialize(width / 3 * 2, this.floorPosY, 6, 6, color(255, 165, 0, 100), 12, 600, 250, PS_MIDDLE, PS_NOLOOP);
-            this.particleSystems.push(ps);
+            this.ufoSpawner = new UfoSpawner();
+            this.ufoSpawner.initialize(this.sfx, this.levelWidth);
+            console.table(levelDesigns[idx].enemies);
+            for (var i = 0; i < levelDesigns[idx].enemies.length; i++) {
+                var ufo = levelDesigns[idx].enemies[i];
+                var ufos = this.ufoSpawner.spawnUfos(ufo.type, ufo.count, ufo.waves);
+                console.table(ufos);
+                this.enemies.push(...ufos);
+            }
 
             //  Start level bg music
-            this.sfx.playMusic("level1bgmusic");
+            this.sfx.playMusic(this.bgMusic, true);
 
         };
 
         this.update = function (scrollPos) {
             this.scrollPos = -scrollPos;
 
-            for (var i = 0; i < this.particleSystems.length; i++)
-                this.particleSystems[i].update();
+            this.updateObjects(this.enemies);
         };
 
         this.draw = function () {
@@ -145,8 +148,13 @@ class Level {
             this.drawObjects(this.bases);
             pop();
 
-            for (var i = 0; i < this.particleSystems.length; i++)
-                this.particleSystems[i].draw();
+            this.drawObjects(this.enemies);
+        };
+
+        this.updateObjects = function (objects) {
+            for (var i = 0; i < objects.length; i++) {
+                objects[i].update();
+            }
         };
 
         this.drawObjects = function (objects) {
@@ -159,11 +167,11 @@ class Level {
             console.log(`toggleMusic: ${this.sfx.soundOn} - ${this.playingMusic}`);
             if (this.playingMusic) {
                 console.log('level stopping music');
-                this.sfx.stopMusic("level1bgmusic");
+                this.sfx.stopMusic(this.bgMusic);
 
             }
             else {
-                this.sfx.playMusic("level1bgmusic");
+                this.sfx.playMusic(this.bgMusic);
                 console.log('level starting music');
             }
 

@@ -1,7 +1,14 @@
-const SFX = [{ key: "explosion", file: "/assets/sfx/8BitRetroSFXPack1ContemporaryExplosion03.wav", },
-{ key: "bullet", file: "/assets/sfx/ShotSingle.wav", },
+const SFX = [{ key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
+{ key: "ufoBossExplosion", file: "/assets/sfx/explosionUfoBoss.wav", },
+{ key: "rockExplosion", file: "/assets/sfx/explosionRocks.wav", },
+{ key: "playerExplosion", file: "/assets/sfx/explosionPlayer.wav", },
+{ key: "singleshot", file: "/assets/sfx/ShotSingle.wav", },
+{ key: "multishot", file: "/assets/sfx/ShotMulti.wav", },
 { key: "playerDeath", file: "/assets/sfx/SFXARCADIAGameFinish10.wav", },
-{ key: "extraLifePickup", file: "/assets/sfx/8BitRetroSFXPack1TraditionalGameStarting08.wav", }];
+{ key: "jump", file: "/assets/sfx/jump.wav", },
+{ key: "ufoStandardFlyBy", file: "/assets/sfx/ufoStandardFlyBy.wav", },
+{ key: "extraLifePickup", file: "/assets/sfx/8BitRetroSFXPack1TraditionalGameStarting08.wav", },
+];
 
 const MUSIC = [{ key: "level1bgmusic", file: "/assets/music/Loop1.wav", },
 ];
@@ -27,60 +34,58 @@ class Sfx {
             for (var i = 0; i < MUSIC.length; i++) {
                 var sound = loadSound(MUSIC[i].file);
                 sound.setVolume(this.musicVolume);
-                sound.setLoop(true);
                 this.music.push({ key: MUSIC[i].key, sound: sound });
                 console.log(`music [${MUSIC[i].file}] loaded`);
             }
         };
 
-        this.playSound = function (key) {
-            if (this.soundOn) {
-                var idx = this.findSoundFile(this.sfx, key);
-                if (idx < 0) {
-                    console.log(`sfx key not found: [${key}]`);
-                    return;
-                }
-
-                console.log(`playing sfx:[${key}]-[${idx}]: [${this.sfx.length}]`);
-                console.log(`playing sfx: ${this.sfx[idx]}`);
-
-                this.sfx[idx].sound.play();
-
-                console.log('after playSound');
-            }
+        this.playSound = function (key, loop) {
+            var sound = this.findSoundFile(this.sfx, key);
+            this.startPlayback(sound, loop);
         };
 
-        this.playMusic = function (key) {
-            if (this.soundOn) {
-                var idx = this.findSoundFile(this.music, key);
-                if (idx < 0) {
-                    console.log(`music key not found: [${key}]`);
-                    return;
-                }
+        this.isSoundPlaying = function (key) {
+            var sound = this.findSoundFile(this.sfx, key);
+            if (sound)
+                return sound.isPlaying();
+            else
+                return false;
+        };
 
-                console.log(`playing music:[${key}]-[${idx}]: [${this.music.length}]`);
-                console.log(`playing music: ${this.music[idx]}`);
+        this.playMusic = function (key, loop) {
+            var sound = this.findSoundFile(this.music, key);
+            this.startPlayback(sound, loop);
+        };
 
-                this.music[idx].sound.play();
-
-                console.log('after playMusic');
-            }
+        this.stopSound = function (key) {
+            var sound = this.findSoundFile(this.sfx, key);
+            this.stopPlayback(sound);
         };
 
         this.stopMusic = function (key) {
-            var idx = this.findSoundFile(this.music, key);
-            if (idx < 0) {
-                console.log(`music key not found: [${key}]`);
-                return;
+            var sound = this.findSoundFile(this.music, key);
+            this.stopPlayback(sound);
+        };
+
+        this.startPlayback = function (sound, loop) {
+            if (this.soundOn) {
+                if (sound) {
+                    sound.play();
+                    if (loop)
+                        sound.setLoop(true);
+                }
             }
+        };
 
-            console.log(`stopping music:[${key}]-[${idx}]: [${this.music.length}]`);
-            console.log(`stopping music: ${this.music[idx]}`);
+        this.stopPlayback = function (sound) {
+            if (sound) {
+                if (sound.isLooping())
+                    sound.setLoop(false);
+                if (sound.isPlaying())
+                    sound.stop();
 
-            if (this.music[idx].sound.isPlaying())
-                this.music[idx].sound.stop();
-
-            console.log('after stopMusic');
+                console.log('after stopPlayback');
+            }
         };
 
         this.toggleSound = function () {
@@ -91,9 +96,11 @@ class Sfx {
         this.findSoundFile = function (sounds, key) {
             for (var i = 0; i < sounds.length; i++) {
                 if (sounds[i].key == key)
-                    return i;
+                    return sounds[i].sound;
             }
-            return -1;
+
+            console.log(`soundFile [${key}] not found`);
+            return null;
         };
     }
 }

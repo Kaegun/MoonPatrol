@@ -128,5 +128,9 @@ class ParticleEmitter {
                     this.particles.splice(i, 1);
             }
         };
+
+        this.alive = function () {
+            return this.particles.length > 0;
+        };
     }
 }

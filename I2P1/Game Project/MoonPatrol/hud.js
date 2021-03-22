@@ -24,8 +24,16 @@ class Hud {
             this.font = loadFont('/assets/fonts/moonhouse/Moonhouse-yE5M.ttf');
         };
 
-        this.update = function (score) {
+        this.update = function (score, lives, missileCounter, shieldTimer, multishotTimer, jumpJetTimer) {
             this.score = score;
+            this.lives = lives;
+            this.missileCounter = missileCounter;
+            this.shielTimer = shieldTimer;
+            this.multishotTimer = multishotTimer;
+            this.jumpJetTimer = jumpJetTimer;
+            this.multishotAvailable = multishotTimer > 0;
+            this.shieldAvailable = shieldTimer > 0;
+            this.jumpJetsAvailable = jumpJetTimer > 0;
         };
 
         this.draw = function () {

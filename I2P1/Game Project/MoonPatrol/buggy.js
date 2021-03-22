@@ -1,17 +1,22 @@
 //  constants
-const MAX_BULLETS = 20;
-const STATE_ALIVE = 0;
-const STATE_DYING = 1;
-const STATE_DEAD = 2;
-const DEATH_LOOP = 40;
+const BUGGY_CENTER_HEIGHT = 60;
+const BUGGY_MAX_BULLETS = 10;
+const BUGGY_STATE_ALIVE = 0;
+const BUGGY_STATE_DYING = 1;
+const BUGGY_STATE_DEAD = 2;
+const BUGGY_DEATH_LOOP = 40;
 const BUGGY_MAX_SPEED = 8;
 const BUGGY_MIN_SPEED = 2;
+const BUGGY_JUMP_SPEED = 10;
+const BUGGY_MAX_JUMP = 140;
 
 class Buggy {
     constructor() {
 
         //  position is at the approximate center of the buggy, to help with collision and fall detection
         this.position;
+        this.velocity;
+        this.floorPosY;
         this.speed = BUGGY_MIN_SPEED;
         this.frameCounter = 0;
 
@@ -28,21 +33,26 @@ class Buggy {
         this.missiles = [];
         this.shield;
 
-        //  Create a number of particle emitters to simulate exploding.
-        this.dyingExplosion = [];
+        this.sfx;
+
+        this.explosion;
 
         //  states
-        this.state = STATE_ALIVE;
+        this.state = BUGGY_STATE_ALIVE;
         this.deathCounter = 0;
-        this.multishot = false;  //  single or multishot turret
+        this.multishot = true;  //  single or multishot turret
         this.multishotTimer = 0;
-        this.jumpJets = false;
         this.missileCount = 0;
         this.acelerating = false;
         this.decelerating = false;
+        this.jumpJets = false;
+        this.jumping = false;
+        this.falling = false;
+        this.plummeting = false;
 
-        this.initialize = function (floorPos_y) {
+        this.initialize = function (floorPosY, sfx) {
 
+            this.sfx = sfx;
             this.availableColors.push(color(153, 50, 204)); //  DarkOrchid
             this.availableColors.push(color(85, 107, 47)); //  DarkOliveGreen
             this.availableColors.push(color(255, 140, 0)); //  DarkOrange
@@ -58,7 +68,9 @@ class Buggy {
             this.cockpitColor = color(0, 255, 255, 150);
 
             //  Set floor height to initial value.
-            this.position = createVector(width / 2, floorPos_y - 60);
+            this.floorPosY = floorPosY - BUGGY_CENTER_HEIGHT;
+            this.position = createVector(width / 2, this.floorPosY);
+            this.velocity = createVector(0, 0);
 
             this.wheels.push(this.createWheel(20));
             this.wheels.push(this.createWheel(70));
@@ -142,29 +154,29 @@ class Buggy {
             for (var i = 0; i < this.bulletsUp.length; i++) {
                 stroke(255, 215, 0, 170);
                 fill(220, 20, 60);
-                rect(this.bulletsUp[i].x, this.bulletsUp[i].y, 4, 10);
-                if (this.multishot) {
-                    quad(this.bulletsUp[i].left_x, this.bulletsUp[i].y,
-                        this.bulletsUp[i].left_x + 4, this.bulletsUp[i].y,
-                        this.bulletsUp[i].left_x + 8, this.bulletsUp[i].y + 10,
-                        this.bulletsUp[i].left_x + 4, this.bulletsUp[i].y + 10);
-                    quad(this.bulletsUp[i].right_x, this.bulletsUp[i].y,
-                        this.bulletsUp[i].right_x + 4, this.bulletsUp[i].y,
-                        this.bulletsUp[i].right_x - 4, this.bulletsUp[i].y + 10,
-                        this.bulletsUp[i].right_x - 8, this.bulletsUp[i].y + 10);
+                if (this.bulletsUp[i].xVelocity == 0) {
+                    rect(this.bulletsUp[i].position.x, this.bulletsUp[i].position.y, 4, 10);
+                } else if (this.bulletsUp[i].xVelocity < 0) {
+                    quad(this.bulletsUp[i].position.x, this.bulletsUp[i].position.y,
+                        this.bulletsUp[i].position.x + 4, this.bulletsUp[i].position.y,
+                        this.bulletsUp[i].position.x + 8, this.bulletsUp[i].position.y + 10,
+                        this.bulletsUp[i].position.x + 4, this.bulletsUp[i].position.y + 10);
+                } else {
+                    quad(this.bulletsUp[i].position.x, this.bulletsUp[i].position.y,
+                        this.bulletsUp[i].position.x + 4, this.bulletsUp[i].position.y,
+                        this.bulletsUp[i].position.x - 4, this.bulletsUp[i].position.y + 10,
+                        this.bulletsUp[i].position.x - 8, this.bulletsUp[i].position.y + 10);
                 }
             }
 
             for (var i = 0; i < this.bulletsFwd.length; i++)
-                rect(this.bulletsFwd[i].x, this.bulletsFwd[i].y, 10, 3);
+                rect(this.bulletsFwd[i].position.x, this.bulletsFwd[i].position.y, 10, 3);
 
             if (this.shield && this.shield.alive())
                 this.shield.draw();
 
-            if (this.state == STATE_DYING) {
-                for (var i = 0; i < this.dyingExplosion.length; i++) {
-                    this.dyingExplosion[i].draw();
-                }
+            if (this.state == BUGGY_STATE_DYING) {
+                this.explosion.draw();
             }
 
             pop();
@@ -173,52 +185,100 @@ class Buggy {
         this.update = function () {
             //  Move any bullets or other projectiles
             for (var i = this.bulletsUp.length - 1; i >= 0; i--) {
-                this.bulletsUp[i].y -= 20;
-                this.bulletsUp[i].left_x -= 10;
-                this.bulletsUp[i].right_x += 10;
+                var velocity = createVector(this.bulletsUp[i].xVelocity, -20);
+                this.bulletsUp[i].position.add(velocity);
 
-                if (this.bulletsUp[i].y < 0)
+                if (this.bulletsUp[i].position.y < 0)
                     this.bulletsUp.splice(i, 1);
             }
 
             for (var i = this.bulletsFwd.length - 1; i >= 0; i--) {
-                this.bulletsFwd[i].x += 20;
-                if (this.bulletsFwd[i].x > width)
+                this.bulletsFwd[i].position.x += 20;
+                if (this.bulletsFwd[i].position.x > width)
                     this.bulletsFwd.splice(i, 1);
             }
 
             switch (this.state) {
-                case STATE_ALIVE:
-                    //  make the wheels wobble randomly, use the current speed to determine bounce speed
-                    var bounceSpeed = BUGGY_MAX_SPEED * 1.5 - this.speed;
-                    if (++this.frameCounter % bounceSpeed == 0) {
+                case BUGGY_STATE_ALIVE:
+                    //  if jumping, the wheels are up, when falling or plummeting, the wheels are down
+                    if (this.falling || this.plummeting) {
                         for (var i = 0; i < this.wheels.length; i++) {
-                            this.wheels[i].y = random(47, 53);
+                            this.wheels[i].y = 58;
+                        }
+                    } else if (this.jumping) {
+                        for (var i = 0; i < this.wheels.length; i++) {
+                            this.wheels[i].y = 40;
+                        }
+                    }
+                    else {
+                        //  make the wheels wobble randomly, use the current speed to determine bounce speed
+                        var bounceSpeed = BUGGY_MAX_SPEED * 1.5 - this.speed;
+                        if (++this.frameCounter % bounceSpeed == 0) {
+                            for (var i = 0; i < this.wheels.length; i++) {
+                                this.wheels[i].y = random(47, 53);
+                            }
                         }
                     }
 
                     //  update the shield
                     if (this.shield && this.shield.alive())
-                        this.shield.update();
+                        this.shield.update(this.velocity);
 
+                    //  Set the buggy's speed and position
                     if (this.acelerating) {
                         this.speed = min(BUGGY_MAX_SPEED, this.speed + 2);
                         if (this.position.x < width - width / 5)
-                            this.position.x += this.speed;
-                    }
-                    if (this.decelerating) {
+                            this.velocity.x = this.speed;
+                        else
+                            this.velocity.x = 0;
+                    } else if (this.decelerating) {
                         this.speed = max(BUGGY_MIN_SPEED, this.speed - 2);
                         if (this.position.x > width / 5)
-                            this.position.x -= this.speed;
+                            this.velocity.x = -BUGGY_MAX_SPEED;
+                        else
+                            this.velocity.x = 0;
+                    }
+                    else {
+                        this.speed = max(BUGGY_MIN_SPEED, this.speed - 2);
+                        this.velocity.x = 0;
                     }
 
+                    if (this.jumping) {
+                        var jumpSpeed = BUGGY_JUMP_SPEED;
+                        var jumpHeight = BUGGY_MAX_JUMP;
+                        if (this.position.y <= this.floorPosY - jumpHeight)
+                            this.falling = true;
+                        if (this.falling) {
+
+                            //  we're back on the ground
+                            if (this.position.y >= this.floorPosY) {
+                                this.jumping = false;
+                                this.falling = false;
+                                this.velocity.y = 0;
+                                this.position.y = this.floorPosY;
+                            }
+                            else {
+                                this.velocity.y = jumpSpeed;
+                            }
+                        }
+                        else {
+                            if (this.jumpJets) {
+                                jumpHeight *= 2;
+                                jumpSpeed *= 2;
+                            }
+                            this.velocity.y = -jumpSpeed;
+                        }
+                        console.log(`${this.falling} - ${this.position.y} : ${this.velocity.y} : ${this.floorPosY + jumpHeight}`);
+                    }
+
+                    this.position.add(this.velocity);
 
                     break;
-                case STATE_DYING:
+                case BUGGY_STATE_DYING:
                     //  blow up the buggy
                     console.log(`dying: ${this.deathCounter}`);
-                    if (this.deathCounter++ < DEATH_LOOP) {
-                        var wheel_delta_y = this.deathCounter > DEATH_LOOP / 2 ? 10 : -10;
+                    if (this.deathCounter++ < BUGGY_DEATH_LOOP) {
+                        var wheel_delta_y = this.deathCounter > BUGGY_DEATH_LOOP / 2 ? 10 : -10;
                         this.wheels[0].x -= 10;
                         this.wheels[0].y += wheel_delta_y;
                         // this.wheels[1].x -= 3;
@@ -226,11 +286,9 @@ class Buggy {
                         this.wheels[2].x += 10;
                         this.wheels[2].y += wheel_delta_y;
 
-                        for (var i = 0; i < this.dyingExplosion.length; i++) {
-                            this.dyingExplosion[i].update();
-                        }
+                        this.explosion.update();
 
-                        var lerpIdx = this.deathCounter / DEATH_LOOP;
+                        var lerpIdx = this.deathCounter / BUGGY_DEATH_LOOP;
                         this.color = lerpColor(this.availableColors[this.colorIdx],
                             color(0, 0, 0),
                             lerpIdx);
@@ -242,10 +300,10 @@ class Buggy {
                             lerpIdx);
                     }
                     else {
-                        this.state = STATE_DEAD;
+                        this.state = BUGGY_STATE_DEAD;
                     }
                     break;
-                case STATE_DEAD:
+                case BUGGY_STATE_DEAD:
                     this.deathCounter = 0;
                     //  Reset explosion, etc.
                     break;
@@ -260,20 +318,41 @@ class Buggy {
             this.decelerating = decelerating;
         };
 
-        this.jump = function () { };
+        this.jump = function () {
+            if (!this.jumping)
+                this.sfx.playSound("jump");
+            this.jumping = true;
+        };
 
         this.fireTurrets = function () {
-            //  Add bullet to up and forward turret (max 20 bullets)
-            if (this.bulletsUp.length < MAX_BULLETS) {
+            //  Add bullet to up and forward turret (to maximum)
+            var fired = false;
+            if (this.bulletsUp.length < BUGGY_MAX_BULLETS) {
                 this.bulletsUp.push({
-                    x: this.position.x - 80,
-                    left_x: this.position.x - 90,
-                    right_x: this.position.x - 70,
-                    y: this.position.y - 50
+                    position: createVector(this.position.x - 80, this.position.y - 50),
+                    xVelocity: 0,
                 });
+                if (this.multishot) {
+                    this.bulletsUp.push({
+                        position: createVector(this.position.x - 90, this.position.y - 50),
+                        xVelocity: -10,
+                    });
+                    this.bulletsUp.push({
+                        position: createVector(this.position.x - 70, this.position.y - 50),
+                        xVelocity: 10,
+                    });
+                }
+                fired = true;
             }
-            if (this.bulletsFwd.length < MAX_BULLETS) {
-                this.bulletsFwd.push({ x: this.position.x + 155, y: this.position.y + 18 });
+            if (this.bulletsFwd.length < BUGGY_MAX_BULLETS) {
+                this.bulletsFwd.push({ position: createVector(this.position.x + 155, this.position.y + 18) });
+                fired = true;
+            }
+            if (fired) {
+                if (this.multishot)
+                    this.sfx.playSound("multishot");
+                else
+                    this.sfx.playSound("singleshot");
             }
         };
 
@@ -285,19 +364,34 @@ class Buggy {
         };
 
         this.destroy = function () {
-            this.state = STATE_DYING;
+            this.state = BUGGY_STATE_DYING;
             this.lives = max(0, this.lives - 1);
 
-            var e = new ParticleEmitter();
-            e.initialize(this.position.x, this.position.y, 3, 3, color(128, 128, 128, 100), 30, 400, 500, PS_MIDDLE, PS_NOLOOP);
-            this.dyingExplosion.push(e);
-            e = new ParticleEmitter();
-            e.initialize(this.position.x, this.position.y, 6, 6, color(255, 165, 0, 100), 12, 600, 250, PS_MIDDLE, PS_NOLOOP);
-            this.dyingExplosion.push(e);
+            this.explosion = new Explosion();
+            this.explosion.initialize(this.position.x, this.position.y);
+
+            this.sfx.playSound("playerExplosion");
         };
 
         this.setActiveColor = function () {
             this.color = this.availableColors[this.colorIdx];
+        };
+
+        //  Need to display health too
+        this.getShieldTimer = function () {
+            return this.shield && this.shield.alive() ? this.shield.lifetime : 0;
+        };
+
+        this.getMultishotTimer = function () {
+            return this.multishot ? this.multishotTimer : 0;
+        };
+
+        this.getMissileCount = function () {
+            return this.missileCount;
+        };
+
+        this.getJumpJetTimer = function () {
+            return this.jumpJets ? this.getJumpJetTimer : 0;
         };
     }
 }

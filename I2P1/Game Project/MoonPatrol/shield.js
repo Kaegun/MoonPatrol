@@ -32,7 +32,7 @@ class Shield {
                 this.diameter = this.maxDiameter * (1 - (++this.shrinkage / this.shrinkLifetime));
             }
             //  move the shield by the moveVector (e.g. it's on a vehicle)
-
+            this.position.add(moveVector);
         };
 
         //  draw a oscillating shield?

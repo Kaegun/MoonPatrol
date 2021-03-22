@@ -1,14 +1,22 @@
 /*
-
 See Readme.md
-
 */
+
+//  constants
+const KEY_FIRE1 = 17;
+const KEY_FIRE2 = 90
+const KEY_SLOWDOWN = 37;
+const KEY_SPEEDUP = 39;
+const KEY_JUMP = 32;
+const KEY_SHIELD = 83;
+const KEY_MUSIC = 77;
+const KEY_ENTER = 13;
+const KEY_ESC = 0;
 
 var activeLevel = 0;
 var numLevels = 0;
 var scrollPos = 0;
 var levels = [];
-var enemies = [];
 var pickups = [];
 var sfx;
 
@@ -18,6 +26,7 @@ var pause = true;
 var buggy;
 var hud;
 var score = 0;
+var lives = 3;
 
 function preload() {
     //  Loading Sound Effects and Music
@@ -30,59 +39,87 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(windowWidth, windowHeight - 3);
+    createCanvas(windowWidth, max(800, windowHeight - 3));
 
     numLevels = createLevels(levels, sfx);
 
+    //  Move this to an initialize level method
     buggy = new Buggy();
-    buggy.initialize(levels[activeLevel].floorPosY);
+    buggy.initialize(levels[activeLevel].floorPosY, sfx);
 
     var pu = new Pickup();
     pu.initialize(1000, levels[activeLevel].floorPosY - 35, 0);
     pickups.push(pu);
-
-    spawnUfoStandardWave(1, enemies);
 }
 
 function draw() {
 
-    scrollPos += this.buggy.speed;
+    //  check for collisions
+    checkCollisions();
 
-    //  call update on all objects to update positions
-    buggy.update(scrollPos);
-    for (var i = 0; i < enemies.length; i++) {
-        enemies[i].update(scrollPos);
-    }
-    for (var i = 0; i < this.pickups.length; i++) {
-        pickups[i].update(scrollPos);
-    }
-
-    levels[activeLevel].update(scrollPos);
-
-    hud.update(score);
+    //  updates
+    update();
 
     //  call draw on all objects to draw all changes
     levels[activeLevel].draw();
 
-    for (var i = 0; i < enemies.length; i++) {
-        enemies[i].draw();
-    }
-
-    for (var i = 0; i < this.pickups.length; i++) {
-        pickups[i].draw();
-    }
+    drawObjects(pickups);
 
     buggy.draw();
 
     hud.draw();
 }
 
+function checkCollisions() {
+    for (var i = 0; i < levels[activeLevel].enemies.length; i++) {
+        checkEnemyCollision(levels[activeLevel].enemies[i], buggy.bulletsUp);
+    }
+}
+
+function checkEnemyCollision(enemy, projectiles) {
+    for (var i = 0; i < projectiles.length; i++) {
+        if (enemy.collision(projectiles[i].position)) {
+            enemy.destroy();
+            score += enemy.scoreValue;
+            return;
+        }
+    }
+}
+
+function update() {
+    scrollPos += this.buggy.speed;
+
+    //  call update on all objects to update positions
+    buggy.update(scrollPos);
+
+    updateObjects(pickups);
+
+    levels[activeLevel].update(scrollPos);
+
+    hud.update(score, lives,
+        buggy.getMissileCount(),
+        buggy.getShieldTimer(),
+        buggy.getMultishotTimer(),
+        buggy.getJumpJetTimer());
+}
+
+function updateObjects(objects) {
+    for (var i = 0; i < objects.length; i++) {
+        objects[i].update(scrollPos);
+    }
+}
+
+function drawObjects(objects) {
+    for (var i = 0; i < objects.length; i++) {
+        objects[i].draw();
+    }
+}
+
 function keyPressed() {
-    // sfx.playSound(0);
     /*
         keys:
             LeftCtrl = 17   - Fire1
-            LeftShift: 16   - Fire2
+            Z: 90           - Fire2
             LeftArrow: 37   - Slow
             RightArrow: 39  - Accelerate
             Spacebar: 32    - Jump
@@ -91,28 +128,31 @@ function keyPressed() {
     */
 
     switch (keyCode) {
-        case 13:
+        case KEY_ENTER:
             //  continue / start / next level, etc.
             break;
-        case 37:
+        case KEY_ESC:
+            //  restart, back, etc.
+            break;
+        case KEY_SLOWDOWN:
             buggy.decelerate(true);
             break;
-        case 39:
+        case KEY_SPEEDUP:
             buggy.accelerate(true);
             break;
-        case 32:
+        case KEY_JUMP:
             buggy.jump();
             break;
-        case 17:
+        case KEY_FIRE1:
             buggy.fireTurrets();
             break;
-        case 16:
+        case KEY_FIRE2:
             buggy.fireMissile();
             break;
-        case 83:
+        case KEY_SHIELD:
             buggy.activateShield();
             break;
-        case 77:    //  turn music playback on or off
+        case KEY_MUSIC:    //  turn music playback on or off
             sfx.toggleSound();
             levels[activeLevel].toggleMusic();
             break;
@@ -120,44 +160,21 @@ function keyPressed() {
             buggy.destroy();
             break;
         default:
-            console.log(`key not handled: [${key}]`);
-            console.log(`keyCode not handled: [${keyCode}]`);
+            console.log(`key press not handled: [${key}]: [${keyCode}]`);
             break;
     }
 }
 
 function keyReleased() {
     switch (keyCode) {
-        case 13:
-            //  continue / start / next level, etc.
+        case KEY_SLOWDOWN:
+            buggy.decelerate(false);
             break;
-        case 37:
-            this.buggy.decelerate(false);
-            break;
-        case 39:
-            this.buggy.accelerate(false);
-            break;
-        case 32:
-            //         this.buggy.jump();
-            break;
-        case 17:
-            //       this.buggy.fireTurrets();
-            break;
-        case 16:
-            //         this.buggy.fireMissile();
-            break;
-        case 83:
-            //          this.buggy.activateShield();
-            break;
-        case 77:    //  turn music playback on or off
-            //        this.levels[this.activeLevel].toggleMusic();
-            break;
-        case 88:    //  TODO: Temporary for testing
-            //        this.buggy.destroy();
+        case KEY_SPEEDUP:
+            buggy.accelerate(false);
             break;
         default:
-            console.log(`key not handled: [${key}]`);
-            console.log(`keyCode not handled: [${keyCode}]`);
+            console.log(`key up not handled: [${key}]: [${keyCode}]`);
             break;
     }
 }

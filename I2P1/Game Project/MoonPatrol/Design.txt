@@ -25,3 +25,16 @@ pickup
    - gives you a boost to speed or firepower for a short time.
 
 https://retrogamer.net/retro_games80/moon-buggy
+
+scrolling speed always at a minimum
+buggy can move forward and back at a speed, even though scrolling is always forward
+
+
+fix waves
+draw pickups
+draw other ufos
+draw craters
+handle crater bombs
+ufos can shoot
+hud stuffs for buggy stuffs
+handle death
