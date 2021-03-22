@@ -24,7 +24,7 @@ steps:
 #     publishLocation: 'Container'
 - task: AzureFileCopy@4
   inputs:
-    SourcePath: '/I2P1/Game Project/MoonPatrol'
+    SourcePath: '$(Build.Repository.LocalPath)/I2P1/Game Project/MoonPatrol'
     azureSubscription: 'VS - JU(e87ae4a9-9432-47fb-8597-f6b84b3ddffd)'
     Destination: 'AzureBlob'
     storage: 'uoli2p1moonpatrol'
