@@ -72,7 +72,7 @@ class Pickup {
                 case PICKUP_MULTISHOT:
                     return 250;
                 case PICKUP_SHIELD:
-                    return 500;
+                    return 200;
                 case PICKUP_JUMPJETS:
                     return 250;
                 default:

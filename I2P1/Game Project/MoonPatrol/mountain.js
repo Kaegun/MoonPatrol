@@ -1,3 +1,6 @@
+const MOUNTAIN_TYPE_SNOW = 0;
+const MOUNTAIN_TYPE_VOLCANO = 1;
+
 class Mountain {
     //  Add different mountain styles, and decorations (volcanoes, etc.)
     constructor() {
@@ -5,12 +8,14 @@ class Mountain {
         this.y;
         this.width;
         this.height;
+        this.type;
 
-        this.initialize = function (floorPos_y, maxLevelWidth) {
-            this.x = random(600, maxLevelWidth);
-            this.y = floorPos_y;
+        this.initialize = function (floorPosY, maxLevelWidth, type) {
+            this.x = random(width / 3, width + maxLevelWidth / 10);
+            this.y = floorPosY;
             this.height = 175;
             this.width = 250;
+            this.type = type != undefined ? type : MOUNTAIN_TYPE_SNOW;
         };
 
         this.draw = function () {

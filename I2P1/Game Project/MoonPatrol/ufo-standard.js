@@ -1,6 +1,7 @@
 class UfoStandard {
     constructor() {
         this.scoreValue = 100;
+        this.dropsPickup = false;
 
         this.position;
         this.sideLen = 60;
@@ -96,7 +97,6 @@ class UfoStandard {
 
         this.collision = function (vector) {
             if (this.state == UFO_STATE_ALIVE) {
-                console.log(`${this.position} - ${vector}`);
                 return this.position.dist(vector) < this.sideLen / 2;
             }
             else return false;
@@ -111,5 +111,9 @@ class UfoStandard {
                 this.state = UFO_STATE_DYING;
             }
         };
+
+        this.alive = function () {
+            return this.state != UFO_STATE_DEAD;
+        }
     }
 }

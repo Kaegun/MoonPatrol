@@ -1,6 +1,6 @@
 var levelDesigns = [{
     floorHeight: 0.3,
-    startX: 150,
+    startX: 250,
     width: 10,
     bgColor: { r: 105, g: 105, b: 105 },
     skyColor: { r: 25, g: 25, b: 112 },
@@ -125,6 +125,14 @@ class Level {
             this.updateObjects(this.enemies);
         };
 
+        this.updateObjects = function (objects) {
+            for (var i = objects.length - 1; i >= 0; i--) {
+                objects[i].update();
+                if (!objects[i].alive())
+                    objects.splice(i, 1);
+            }
+        };
+        
         this.draw = function () {
             background(this.skyColor); // fill the sky
 
@@ -152,12 +160,6 @@ class Level {
             pop();
 
             this.drawObjects(this.enemies);
-        };
-
-        this.updateObjects = function (objects) {
-            for (var i = 0; i < objects.length; i++) {
-                objects[i].update();
-            }
         };
 
         this.drawObjects = function (objects) {

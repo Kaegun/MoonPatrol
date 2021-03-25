@@ -3,6 +3,7 @@ class Hud {
         const HUD_ACTIVE_COLOR = color(50, 255, 50);
         const HUD_WARNING_COLOR = color(200, 200, 50);
         const HUD_ERROR_COLOR = color(255, 50, 50);
+        const HUD_NO_COLOR = color(0, 0, 0, 0);
 
         const HUD_EXTRA_RECT_WIDTH = 200;
 
@@ -14,9 +15,6 @@ class Hud {
         this.shieldTimer = 0;
         this.multishotTimer = 0;
         this.jumpJetTimer = 0;
-        this.shieldAvailable = false;
-        this.jumpJetsAvailable = false;
-        this.multishotAvailable = false;
         this.extraBoxStartPos = 0;
 
         //  This must be called in preload
@@ -28,12 +26,9 @@ class Hud {
             this.score = score;
             this.lives = lives;
             this.missileCounter = missileCounter;
-            this.shielTimer = shieldTimer;
+            this.shieldTimer = shieldTimer;
             this.multishotTimer = multishotTimer;
             this.jumpJetTimer = jumpJetTimer;
-            this.multishotAvailable = multishotTimer > 0;
-            this.shieldAvailable = shieldTimer > 0;
-            this.jumpJetsAvailable = jumpJetTimer > 0;
         };
 
         this.draw = function () {
@@ -87,23 +82,34 @@ class Hud {
         };
 
         this.drawMissiles = function (x, y) {
-            this.drawExtraBox(x, y, 'MISSILES', HUD_ACTIVE_COLOR);
+            this.drawExtraBox(x, y, 'MISSILES', this.calculateHudColor(this.missileCounter, 5, 3));
             this.drawExtraBox(x, y + 45, `${this.missileCounter}`);
         };
 
         this.drawShield = function (x, y) {
-            this.drawExtraBox(x, y, 'SHIELD', HUD_WARNING_COLOR);
+            this.drawExtraBox(x, y, 'SHIELD', this.calculateHudColor(this.shieldTimer, 100, 50));
             this.drawExtraBox(x, y + 45, `${this.shieldTimer}`);
         };
 
         this.drawMultishot = function (x, y) {
-            this.drawExtraBox(x, y, 'MULTISHOT', HUD_ERROR_COLOR);
+            this.drawExtraBox(x, y, 'MULTISHOT', this.calculateHudColor(this.multishotTimer, 100, 50));
             this.drawExtraBox(x, y + 45, `${this.multishotTimer}`);
         };
 
         this.drawJumpJets = function (x, y) {
-            this.drawExtraBox(x, y, 'JUMPJETS');
+            this.drawExtraBox(x, y, 'JUMPJETS', this.calculateHudColor(this.jumpJetTimer, 100, 50));
             this.drawExtraBox(x, y + 45, `${this.jumpJetTimer}`);
         };
+
+        this.calculateHudColor = function (value, upper, mid) {
+            var hudColor = HUD_NO_COLOR;
+            if (value > upper)
+                hudColor = HUD_ACTIVE_COLOR;
+            else if (value > mid)
+                hudColor = HUD_WARNING_COLOR;
+            else if (value > 0)
+                hudColor = HUD_ERROR_COLOR;
+            return hudColor;
+        }
     }
 }

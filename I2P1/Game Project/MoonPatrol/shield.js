@@ -24,13 +24,14 @@ class Shield {
             //  reduce the lifetime of the shield
             this.lifetime--;
             //  grow or shrink the shield
-            console.log(`${this.growth} - ${this.growLifetime}`);
             if (this.growth < this.growLifetime) {
                 this.diameter = this.maxDiameter * (++this.growth / this.growLifetime);
             }
             else if (this.lifetime < this.shrinkLifetime) {
                 this.diameter = this.maxDiameter * (1 - (++this.shrinkage / this.shrinkLifetime));
             }
+
+            console.log(`${this.diameter} | ${this.maxDiameter} | ${this.growth} | ${this.growLifetime} | ${this.shrinkage} | ${this.shrinkLifetime}`);
             //  move the shield by the moveVector (e.g. it's on a vehicle)
             this.position.add(moveVector);
         };

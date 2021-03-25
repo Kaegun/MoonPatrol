@@ -42,6 +42,7 @@ class Buggy {
         this.state = BUGGY_STATE_ALIVE;
         this.deathCounter = 0;
         this.multishot = false;  //  single or multishot turret
+        this.multishotActivated = false;
         this.jumpJets = false;
         this.multishotTimer = 0;
         this.missileCount = 0;
@@ -177,9 +178,15 @@ class Buggy {
             for (var i = 0; i < this.bulletsFwd.length; i++)
                 rect(this.bulletsFwd[i].position.x, this.bulletsFwd[i].position.y, 10, 3);
 
+            //  TODO: draw the missiles
+
+            //  TODO: draw the jumpJet particles
+
+            //  draw the shield
             if (this.shield && this.shield.alive())
                 this.shield.draw();
 
+            //  draw the dying explosion
             if (this.state == BUGGY_STATE_DYING) {
                 this.explosion.draw();
             }
@@ -227,8 +234,25 @@ class Buggy {
                     }
 
                     //  update the shield
-                    if (this.shield && this.shield.alive())
-                        this.shield.update(this.velocity);
+                    if (this.shield) {
+                        if (this.shield.alive()) {
+                            this.shield.update(this.velocity);
+                            this.shieldTimer = this.shield.lifetime;
+                        }
+                        else {
+                            //  reset the shield when it runs out.
+                            this.shield = null;
+                        }
+                    }
+
+                    //  update the multishot counter
+                    if (this.multishotActivated) {
+                        if (--this.multishotTimer <= 0) {
+                            this.multishotActivated = false;
+                            this.multishot = false;
+                            this.multishotTimer = 0;
+                        }
+                    }
 
                     //  Set the buggy's speed and position
                     if (this.acelerating) {
@@ -252,6 +276,14 @@ class Buggy {
                     if (this.jumping) {
                         var jumpSpeed = BUGGY_JUMP_SPEED;
                         var jumpHeight = BUGGY_MAX_JUMP;
+                        if (this.jumpJets) {
+                            jumpHeight *= 2;
+                            jumpSpeed *= this.falling ? 1 : 1.5;
+                            if (--this.jumpJetsTimer <= 0) {
+                                this.jumpJets = false;
+                                this.jumpJetsTimer = 0;
+                            }
+                        }
                         if (this.position.y <= this.floorPosY - jumpHeight)
                             this.falling = true;
                         if (this.falling) {
@@ -268,10 +300,6 @@ class Buggy {
                             }
                         }
                         else {
-                            if (this.jumpJets) {
-                                jumpHeight *= 2;
-                                jumpSpeed *= 2;
-                            }
                             this.velocity.y = -jumpSpeed;
                         }
                         console.log(`${this.falling} - ${this.position.y} : ${this.velocity.y} : ${this.floorPosY + jumpHeight}`);
@@ -284,13 +312,13 @@ class Buggy {
                     //  blow up the buggy
                     console.log(`dying: ${this.deathCounter}`);
                     if (this.deathCounter++ < BUGGY_DEATH_LOOP) {
-                        var wheel_delta_y = this.deathCounter > BUGGY_DEATH_LOOP / 2 ? 10 : -10;
+                        var wheelDeltaY = this.deathCounter > BUGGY_DEATH_LOOP / 2 ? 10 : -10;
                         this.wheels[0].x -= 10;
-                        this.wheels[0].y += wheel_delta_y;
+                        this.wheels[0].y += wheelDeltaY;
                         // this.wheels[1].x -= 3;
-                        this.wheels[1].y += wheel_delta_y;
+                        this.wheels[1].y += wheelDeltaY;
                         this.wheels[2].x += 10;
-                        this.wheels[2].y += wheel_delta_y;
+                        this.wheels[2].y += wheelDeltaY;
 
                         this.explosion.update();
 
@@ -333,7 +361,8 @@ class Buggy {
         this.fireTurrets = function () {
             //  Add bullet to up and forward turret (to maximum)
             var fired = false;
-            if (this.bulletsUp.length < BUGGY_MAX_BULLETS) {
+            var maxBullets = this.multishot ? BUGGY_MAX_BULLETS * 3 : BUGGY_MAX_BULLETS;
+            if (this.bulletsUp.length < maxBullets) {
                 this.bulletsUp.push({
                     position: createVector(this.position.x - 80, this.position.y - 50),
                     xVelocity: 0,
@@ -355,8 +384,10 @@ class Buggy {
                 fired = true;
             }
             if (fired) {
-                if (this.multishot)
+                if (this.multishot) {
                     this.sfx.playSound("multishot");
+                    this.multishotActivated = true;
+                }
                 else
                     this.sfx.playSound("singleshot");
             }
@@ -365,9 +396,10 @@ class Buggy {
         this.fireMissile = function () { };
 
         this.activateShield = function () {
-            if (!this.shield)
+            if (this.shieldTimer > 0 && !this.shield) {
                 this.shield = new Shield();
-            this.shield.initialize(this.position.x, this.position.y, this.shieldTimer, 80);
+                this.shield.initialize(this.position.x, this.position.y, 340, this.shieldTimer);
+            }
         };
 
         this.destroy = function () {
@@ -408,8 +440,7 @@ class Buggy {
 
         //  Need to display health too
         this.getShieldTimer = function () {
-          //  console.log(`${this.shield} && ${this.shield.alive()}) ? ${this.shield.lifetime} : ${this.shieldTimer}`);
-            return (this.shield && this.shield.alive()) ? this.shield.lifetime : this.shieldTimer;
+            return this.shieldTimer;
         };
 
         this.getMultishotTimer = function () {
