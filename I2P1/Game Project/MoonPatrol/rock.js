@@ -4,9 +4,8 @@ class Rock {
         this.color;
         this.accentColor;
 
-        this.initialize = function (floorPos_y, levelWidth) {
-            // this.position = createVector(random(250, levelWidth - 250), floorPos_y);
-            this.position = createVector(250, floorPos_y);
+        this.initialize = function (x, floorPosY) {
+            this.position = createVector(x, floorPosY);
             this.color = color(205, 92, 92);
             this.accentColor = color(85, 107, 47);
         };

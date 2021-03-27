@@ -54,7 +54,6 @@ class Crater {
 
         //  Test whether the player fell into the crater
         this.collision = function (vector) {
-            console.log(`${this.position}|${vector} ${this.position.dist(vector)} < ${this.width / 2}`);
             return this.position.dist(vector) < this.width / 2;
         };
     }

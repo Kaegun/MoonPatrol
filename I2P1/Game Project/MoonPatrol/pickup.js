@@ -15,7 +15,7 @@ const pickupParameters = [
     { type: PICKUP_MISSILES, dropChance: 10, collisionRadius: 80, yOffset: -35, },
     { type: PICKUP_SHIELD, dropChance: 20, collisionRadius: 80, yOffset: -35, },
     { type: PICKUP_MULTISHOT, dropChance: 50, collisionRadius: 80, yOffset: -35, },
-    { type: PICKUP_GEM, dropChance: 5, collisionRadius: 80, yOffset: -35, },
+    { type: PICKUP_GEM, dropChance: 5, collisionRadius: 80, yOffset: 0, },
     { type: PICKUP_JUMPJETS, dropChance: 10, collisionRadius: 80, yOffset: -35, },
 ];
 
@@ -23,16 +23,19 @@ class Pickup {
 
     static createRandomPickup(dropChance, x, y, speed, floorPosY) {
         //  randomly determine whether a pikup spawns
-        if (random(1, dropChance) <= dropChance) {
+        //  dropChance is value out of 100
+        if (random(1, 100) <= dropChance) {
             while (true) {
                 var puType = round(random(0, PICKUP_MAX));
-                if (random(1, pickupParameters[puType].dropChance) <= pickupParameters[puType].dropChance) {
+                if (random(1, 100) <= pickupParameters[puType].dropChance) {
                     var pu = new Pickup();
                     pu.initialize(puType, sfx, x, y + pickupParameters[puType].yOffset, speed, floorPosY);
                     return pu;
                 }
             }
         }
+        else
+            return null;
     }
 
     static createPickup(type, x, y, speed, floorPosY) {
@@ -68,7 +71,7 @@ class Pickup {
             else {
                 //  lerp the forward speed to the height off the ground
                 var xSpeed = lerp(0, this.speed, (abs(this.floorPosY - this.position.y) / this.startY));
-                var velocity = createVector(xSpeed, 5);
+                var velocity = createVector(xSpeed, 10);
                 this.position.add(velocity);
             }
         };

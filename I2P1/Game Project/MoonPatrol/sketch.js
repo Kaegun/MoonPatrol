@@ -18,8 +18,9 @@ const KEY_HELP = 112;
 const GAME_STATE_MENU = 0;
 const GAME_STATE_PLAYING = 1;
 const GAME_STATE_DEAD = 2;
-const GAME_STATE_WON = 3;
-const GAME_STATE_PAUSED = 4;
+const GAME_STATE_GAME_OVER = 3;
+const GAME_STATE_WON = 4;
+const GAME_STATE_PAUSED = 5;
 
 //  Sound Constants
 const SFX_SOUND_PICKUP_DROPPED = "pickupDropped";
@@ -70,7 +71,7 @@ function preLoadCallback(obj) {
 
 function setup() {
     createCanvas(windowWidth, max(800, windowHeight - 3));
-    frameRate(30);
+    frameRate(30);  // Set the Framerate to 30 to slow it down on fast PCs
 
     numLevels = Level.createLevels(levels, sfx, pickups);
 
@@ -80,6 +81,24 @@ function setup() {
     //  Move this to an initialize level method
     buggy = new Buggy();
     buggy.initialize(levels[activeLevel].startX, levels[activeLevel].floorPosY, sfx);
+}
+
+function restartLevel() {
+
+    //  Reset state variables
+    scrollPos = 0;
+
+    //  clear arrays
+    clearArray(pickups);
+
+    //  Reset the player
+    buggy.reset(levels[activeLevel].startX, levels[activeLevel].floorPosY);
+
+    //  Restart the level
+    levels[activeLevel].restart();
+
+    //  set state to playing
+    gameState = GAME_STATE_PLAYING;
 }
 
 function draw() {
@@ -94,8 +113,14 @@ function draw() {
         case GAME_STATE_DEAD:
             drawDead();
             break;
+        case GAME_STATE_GAME_OVER:
+            drawGameOver();
+            break;
         case GAME_STATE_WON:
             drawWon();
+            break;
+        case GAME_STATE_PAUSED:
+            drawPaused();
             break;
     }
 }
@@ -200,9 +225,36 @@ function drawPlaying() {
     hud.draw();
 }
 
-function drawDead() { }
+function drawDead() {
+
+    fill(255, 0, 0);
+    stroke(128, 128, 128);
+    strokeWeight(4);
+
+    var startY = (height - 96) / 2;
+    drawTextCentered("YOU HAVE DIED", startY, 96);
+    startY += 116;
+    strokeWeight(2);
+    drawTextCentered("Press 'Enter' or 'ESC' to restart the Level", startY, 36);
+}
+
+function drawGameOver() {
+
+    fill(255, 0, 0);
+    stroke(128, 128, 128);
+    strokeWeight(4);
+
+    var startY = (height - 96) / 2;
+    drawTextCentered("GAME OVER", startY, 96);
+    startY += 116;
+    strokeWeight(2);
+    drawTextCentered("Press 'Enter' or 'ESC' to restart the Game", startY, 36);
+
+}
 
 function drawWon() { }
+
+function drawPaused() { }
 
 function checkCollisions() {
     for (var i = 0; i < levels[activeLevel].enemies.length; i++) {
@@ -220,11 +272,12 @@ function checkCollisions() {
         }
     }
 
-    for (var i = 0; i < levels[activeLevel].craters.length; i++) {
-        var crater = levels[activeLevel].craters[i];
-        if (crater.collision(buggy.worldPosition)) {
-            buggy.setPlummeting(true);
-            console.log('plummeting');
+    if (!buggy.jumping) {
+        for (var i = 0; i < levels[activeLevel].craters.length; i++) {
+            var crater = levels[activeLevel].craters[i];
+            if (crater.collision(buggy.worldPosition)) {
+                buggy.setPlummeting(true);
+            }
         }
     }
 }
@@ -242,11 +295,19 @@ function checkEnemyCollision(enemy, projectiles) {
                     enemy.position.y,
                     enemy.speed,
                     levels[activeLevel].floorPosY);
-                sfx.playSound(SFX_SOUND_PICKUP_DROPPED);
-                pickups.push(pu);
+                if (pu) {
+                    sfx.playSound(SFX_SOUND_PICKUP_DROPPED);
+                    pickups.push(pu);
+                }
             }
             return;
         }
+    }
+
+    //  bullets in screen coordinates?
+    if (enemy.collision && enemy.collision(buggy.position)) {
+        buggy.destroy();
+        return;
     }
 }
 
@@ -268,6 +329,7 @@ function update() {
         levels[activeLevel].update(scrollPos);
     }
     else {
+        gameState = buggy.lives == 0 ? GAME_STATE_GAME_OVER : GAME_STATE_DEAD;
         levels[activeLevel].stopAllSound();
         if (!sfx.isSoundPlaying(SFX_PLAYER_DEAD_BG)) {
             if (!defeatMusicPlayed) {
@@ -319,8 +381,14 @@ function keyPressed() {
         case GAME_STATE_DEAD:
             keyPressedDead();
             break;
+        case GAME_STATE_GAME_OVER:
+            keyPressedGameOver();
+            break;
         case GAME_STATE_WON:
             keyPressedWon();
+            break;
+        case GAME_STATE_PAUSED:
+            keyPressedPaused();
             break;
     }
 }
@@ -400,6 +468,45 @@ function keyPressedPlaying() {
     }
 }
 
+function keyPressedDead() {
+    switch (keyCode) {
+        case KEY_ESC:
+        case KEY_ENTER:
+            //  Restart the level
+            restartLevel();
+            break;
+        default:
+            console.log(`key up not handled: [${key}]: [${keyCode}]`);
+            break;
+    }
+}
+
+function keyPressedGameOver() {
+    switch (keyCode) {
+        case KEY_ESC:
+        case KEY_ENTER:
+            //  Restart the level
+            startLevel();
+            break;
+        default:
+            console.log(`key up not handled: [${key}]: [${keyCode}]`);
+            break;
+    }
+}
+
+function keyPressedWon() {
+    switch (keyCode) {
+        case KEY_ESC:
+        case KEY_ENTER:
+            //  Restart the level
+            startLevel();
+            break;
+        default:
+            console.log(`key up not handled: [${key}]: [${keyCode}]`);
+            break;
+    }
+}
+
 function keyReleased() {
     switch (keyCode) {
         case KEY_SLOWDOWN:
@@ -412,4 +519,9 @@ function keyReleased() {
             console.log(`key up not handled: [${key}]: [${keyCode}]`);
             break;
     }
+}
+
+function clearArray(array) {
+    if (array && array.length && array.length > 0)
+        array.splice(0, array.length);
 }

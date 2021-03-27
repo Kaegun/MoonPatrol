@@ -5,13 +5,17 @@ const levelDesigns = [
         width: 10,
         bgColor: { r: 105, g: 105, b: 105 },
         skyColor: { r: 25, g: 25, b: 112 },
-        planets: [{ x: 400, y: 200, color: { r: 238, g: 130, b: 238 }, accentColor: { r: 186, g: 85, b: 211 }, diameter: 280 },
-        { x: 900, y: 250, color: { r: 175, g: 238, b: 238 }, accentColor: { r: 95, g: 158, b: 160 }, diameter: 160 },],
-        rocks: [],
-        mountains: [],
-        craters: [],
-        enemies: [{ type: UFO_STANDARD, count: 3, waves: 10, },
-        { type: UFO_SCOUT, count: 1, waves: 5, }],
+        planets: [
+            { x: 400, y: 200, color: { r: 238, g: 130, b: 238 }, accentColor: { r: 186, g: 85, b: 211 }, diameter: 280 },
+            { x: 900, y: 250, color: { r: 175, g: 238, b: 238 }, accentColor: { r: 95, g: 158, b: 160 }, diameter: 160 },
+        ],
+        rocks: 20,
+        mountains: { qty: 5, type: MOUNTAIN_TYPE_SNOW, },
+        craters: 12,
+        enemies: [
+            { type: UFO_STANDARD, count: 3, waves: 10, },
+            { type: UFO_SCOUT, count: 1, waves: 5, }
+        ],
     },
 ];
 
@@ -80,28 +84,40 @@ class Level {
                 this.planets.push(p);
             }
 
-            // mountains - Due to parralax scrolling I've not seen a second mountain yet.
-            var numMountains = random(1, 5);
+            // mountains 
+            var numMountains = random(1, levelDesigns[idx].qty);
             for (var i = 0; i < numMountains; i++) {
                 var m = new Mountain();
-                m.initialize(this.floorPosY + 8, this.levelWidth);
-                //  TODO: Make sure mountains don't overlap
+                m.initialize(this.floorPosY + 8, this.levelWidth, levelDesigns[idx].mountains.type);
                 this.mountains.push(m);
             }
 
             //  rock formations
-            var rock = new Rock();
-            rock.initialize(this.floorPosY, this.levelWidth);
-            this.rocks.push(rock);
+            var numRocks = random(levelDesigns[idx].rocks * 0.4, levelDesigns[idx].rocks);
+            var rockOffset = this.levelWidth / numRocks;
+            var rockX = rockOffset;
+            for (var i = 0; i < numRocks; i++) {
+                var rock = new Rock();
+                rockX += random(0, rockOffset);
+                rock.initialize(rockX, this.floorPosY);
+                this.rocks.push(rock);
+            }
 
             //  terrain
             this.terrain = new Terrain();
             this.terrain.initialize(this.groundColor, this.levelWidth, this.floorPosY);
 
             //  craters
-            var crater = new Crater();
-            crater.initialize(800, this.floorPosY, this.floorHeight, this.skyColor, CRATER_NORMAL);
-            this.craters.push(crater);
+            var numCraters = random(levelDesigns[idx].craters * 0.6, levelDesigns[idx].craters);
+            var craterOffset = this.levelWidth / numCraters;
+            var craterX = craterOffset;
+            for (var i = 0; i < numCraters; i++) {
+                var crater = new Crater();
+                craterX += random(craterOffset / 3, craterOffset * 1.5);
+                var craterType = round(random(1, 2));
+                crater.initialize(craterX, this.floorPosY, this.floorHeight, this.skyColor, craterType);
+                this.craters.push(crater);
+            }
 
             //  base(s)
             var base = new Base();
@@ -110,7 +126,7 @@ class Level {
 
             for (var i = 0; i < levelDesigns[idx].enemies.length; i++) {
                 var ufo = levelDesigns[idx].enemies[i];
-                var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves);
+                var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves, this.floorPosY);
                 this.enemies.push(...ufos);
             }
 
@@ -125,6 +141,25 @@ class Level {
             this.sfx.playSound(this.bgMusic, true);
         };
 
+        this.restart = function () {
+            //  Clear all arrays
+            clearArray(this.bases);
+            clearArray(this.planets);
+            clearArray(this.mountains);
+            clearArray(this.rocks);
+            clearArray(this.craters);
+            clearArray(this.enemies);
+
+            //  Clear state flags
+            this.scrollPos = 0;
+
+            //  init
+            this.initialize(this.levelNumber - 1, this.sfx, this.pickups);
+
+            //  start
+            this.start();
+        };
+
         this.update = function (scrollPos) {
             this.scrollPos = -scrollPos;
 
@@ -135,7 +170,6 @@ class Level {
             for (var i = objects.length - 1; i >= 0; i--) {
                 objects[i].update();
                 if (!Collidable.alive(objects[i])) {
-                    console.log('object is dead, removing');
                     objects.splice(i, 1);
                 }
             }
@@ -167,7 +201,6 @@ class Level {
             this.drawObjects(this.bases);
             pop();
 
-            console.log(`# Active UFOs: [${this.enemies.length}]`);
             this.drawObjects(this.enemies);
         };
 
@@ -180,15 +213,12 @@ class Level {
         };
 
         this.toggleMusic = function () {
-            console.log(`toggleMusic: ${this.sfx.soundOn} - ${this.playingMusic}`);
             if (this.playingMusic) {
-                console.log('level stopping music');
                 this.sfx.stopSound(this.bgMusic);
 
             }
             else {
                 this.sfx.playSound(this.bgMusic);
-                console.log('level starting music');
             }
 
             this.playingMusic = !this.playingMusic;

@@ -13,6 +13,9 @@ const BUGGY_MIN_SPEED = 2;
 const BUGGY_JUMP_SPEED = 10;
 const BUGGY_MAX_JUMP = 140;
 const BUGGY_JUMPJET_FACTOR = 1.5;
+const BUGGY_PLUMMET_SPEED = 10;
+
+const BUGGY_COLLISION_BOUND = 60;
 
 class Buggy {
     constructor() {
@@ -23,7 +26,6 @@ class Buggy {
         this.velocity;
         this.floorPosY;
         this.speed = BUGGY_MIN_SPEED;
-        this.frameCounter = 0;
         this.deathCounter = 0;
 
         this.color;
@@ -97,6 +99,38 @@ class Buggy {
                 wheelDiameter: 45,
                 rimDiameter: 25
             };
+        };
+
+        this.reset = function (startX, floorPosY) {
+            //  clear array objects
+            clearArray(this.wheels);
+            clearArray(this.bulletsFwd);
+            clearArray(this.bulletsUp);
+            clearArray(this.missiles);
+            clearArray(this.jumpJetParticles);
+            clearArray(this.availableColors);
+
+            //  clear other objects
+            this.explosion = null;
+            this.shield = null;
+
+            //  clear state flags and counters
+            this.state = BUGGY_STATE_ALIVE;
+            this.multishot = false;
+            this.multishotActivated = false;
+            this.jumpJets = false;
+            this.jumpJetsActivated = false;
+            this.multishotTimer = 0;
+            this.missileCount = 0;
+            this.shieldTimer = 0;
+            this.jumpJetsTimer = 0;
+            this.acelerating = false;
+            this.decelerating = false;
+            this.jumping = false;
+            this.falling = false;
+            this.plummeting = false;
+
+            this.initialize(startX, floorPosY, this.sfx);
         };
 
         this.draw = function () {
@@ -219,8 +253,6 @@ class Buggy {
                     this.bulletsFwd.splice(i, 1);
             }
 
-            console.log(`${this.plummeting}| ${this.state}`);
-
             //  if jumping, the wheels are up, when falling or plummeting, the wheels are down
             if (this.falling || this.plummeting) {
                 for (var i = 0; i < this.wheels.length; i++) {
@@ -234,7 +266,7 @@ class Buggy {
             else if (this.state == BUGGY_STATE_ALIVE) {
                 //  make the wheels wobble randomly, use the current speed to determine bounce speed
                 var bounceSpeed = round(BUGGY_MAX_SPEED * 1.5 - this.speed);
-                if (++this.frameCounter % bounceSpeed == 0) {
+                if (frameCount % bounceSpeed == 0) {
                     for (var i = 0; i < this.wheels.length; i++) {
                         this.wheels[i].y = random(47, 53);
                     }
@@ -328,8 +360,7 @@ class Buggy {
                 case BUGGY_STATE_DYING:
                     //  Falling into a crater
                     if (this.plummeting) {
-                        console.log("why aren't we falling");
-                        this.velocity.y = 10;
+                        this.velocity.y = BUGGY_PLUMMET_SPEED;
                         if (this.position.y > this.floorPosY + 90)
                             this.state = BUGGY_STATE_DEAD;
                     }

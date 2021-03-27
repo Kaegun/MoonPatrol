@@ -21,7 +21,7 @@ class UfoScout {
         this.sfxWarningPlaying = false;
         this.sfxFlyByPlaying = false;
 
-        this.initialize = function (x, y, sfx, speedFactor) {
+        this.initialize = function (x, y, sfx, speedFactor, floorPosY) {
             this.sfx = sfx;
             this.position = createVector(x, y);
             this.velocity = createVector(1, 0);
@@ -93,6 +93,10 @@ class UfoScout {
                 this.sfx.stopSound(UFO_SCOUT_SFX_FLYBY);
             if (this.sfx.isSoundPlaying(UFO_SCOUT_SFX_WARN))
                 this.sfx.stopSound(UFO_SCOUT_SFX_WARN);
+        };
+
+        this.collision = function (collider) {
+            return false;
         };
     }
 }

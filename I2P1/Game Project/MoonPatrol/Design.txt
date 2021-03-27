@@ -1,7 +1,12 @@
 moonbuggy game
- - draw the buggy
- - make wheels bounce
- 
+xx - draw the buggy
+xx - make wheels bounce
+
+handle plummeting
+ - fix collision when jumping
+ - add You DEAD screen
+handle buggy death properly 
+
 aliens 
  - drop bombs
  

@@ -2,8 +2,10 @@ const UFO_STD_SIDELEN = 60;
 const UFO_STD_DIAMETER = 30;
 const UFO_STD_FWD_SPEED = 6;
 const UFO_STD_CLIMB_SPEED = 3;
+const UFO_STD_FIRE_RATE = 60;
 
 const UFO_STD_SFX_FLYBY = "ufoStandardFlyBy";
+const UFO_STD_SFX_BULLET_IMPACT = "smallImpact";
 
 class UfoStandard {
     constructor() {
@@ -11,9 +13,12 @@ class UfoStandard {
         this.scoreValue = 100;
         this.collisionRadius = UFO_STD_SIDELEN / 2;
         this.visibleRadius = UFO_STD_SIDELEN + UFO_STD_DIAMETER;
-        this.dropsPickup = false;
+        this.dropsPickup = true;
+        this.dropChance = 10;
 
         this.position;
+        this.floorPosY;
+        this.speedFactor;
         this.rotation = 0;
         this.direction = 1;
         this.speed;
@@ -24,9 +29,12 @@ class UfoStandard {
         this.explosion;
         this.deathCounter = 0;
         this.soundPlaying = false;
+        this.bullets = [];
 
-        this.initialize = function (x, y, sfx) {
+        this.initialize = function (x, y, sfx, speedFactor, floorPosY) {
             this.position = createVector(x, y);
+            this.floorPosY = floorPosY;
+            this.speedFactor = speedFactor;
             this.maxY = y + 50;
             this.minY = y - 50;
             this.sfx = sfx;
@@ -52,6 +60,7 @@ class UfoStandard {
 
             //  move the Ufo - needs to be a predictable pattern, so it doesn't clash with others
             this.rotation++;
+
             if (this.state == COLLIDABLE_STATE_ALIVE) {
                 if (this.position.y > this.maxY)
                     this.direction = -1;
@@ -59,6 +68,15 @@ class UfoStandard {
                     this.direction = 1;
 
                 this.position.add(createVector(UFO_STD_FWD_SPEED, UFO_STD_CLIMB_SPEED * this.direction));
+                if (Collidable.onScreen(this)) {
+                    if (frameCount % UFO_STD_FIRE_RATE == 0) {
+                        //  fire a bullet
+                        var b = new BombSmall();
+                        b.initialize(this.position.x, this.position.y, UFO_STD_FWD_SPEED, this.floorPosY);
+                        this.bullets.push(b);
+                        //  play shooting sound for bomb
+                    }
+                }
             } else if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.update();
                 if (!this.explosion.alive())
@@ -67,6 +85,9 @@ class UfoStandard {
             else {
                 //  Ufo is dead.
             }
+
+            //  always update bullets (they'll disappear though when the ufo does)
+            this.updateBullets();
         };
 
         this.draw = function () {
@@ -103,6 +124,8 @@ class UfoStandard {
             }
             pop();
 
+            this.drawBullets();
+
             if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.draw();
             }
@@ -123,6 +146,33 @@ class UfoStandard {
         this.stopAllSound = function () {
             if (this.sfx.isSoundPlaying(UFO_STD_SFX_FLYBY))
                 this.sfx.stopSound(UFO_STD_SFX_FLYBY);
+        };
+
+        this.updateBullets = function () {
+            for (var i = this.bullets.length - 1; i >= 0; i--) {
+                //  if below the ground, remove it
+                if (this.bullets[i].position.y >= this.floorPosY) {
+                    this.bullets.splice(i, 1);
+                    this.sfx.playSound(UFO_STD_SFX_BULLET_IMPACT);
+                }
+                else
+                    this.bullets[i].update();
+            }
+        };
+
+        this.drawBullets = function () {
+            for (var i = 0; i < this.bullets.length; i++) {
+                this.bullets[i].draw();
+            }
+        };
+
+        this.collision = function (collider) {
+            for (var i = this.bullets.length - 1; i >= 0; i--) {
+                if (this.bullets[i].position.dist(collider) < BUGGY_COLLISION_BOUND) {
+                    this.bullets.splice(i, 1);
+                    return true;
+                }
+            }
         };
     }
 }

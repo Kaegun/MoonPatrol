@@ -1,5 +1,6 @@
 const SFX = [
     { key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
+    { key: "smallImpact", file: "/assets/sfx/smallImpact.wav", },
     { key: "ufoBossExplosion", file: "/assets/sfx/explosionUfoBoss.wav", },
     { key: "rockExplosion", file: "/assets/sfx/explosionRocks.wav", },
     { key: "playerExplosion", file: "/assets/sfx/explosionPlayer.wav", },
@@ -36,11 +37,9 @@ class Sfx {
             soundFormats('mp3', 'wav');
 
             for (var i = 0; i < SFX.length; i++) {
-                console.log(`sfx [${SFX[i].file}] loading`);
                 var sound = loadSound(SFX[i].file, callback);
                 sound.setVolume(this.sfxVolume);
                 this.sfx.push({ key: SFX[i].key, sound: sound });
-                console.log(`sfx [${SFX[i].file}] loaded`);
             }
         };
 
@@ -63,12 +62,10 @@ class Sfx {
         };
 
         this.startPlayback = function (sound, loop) {
-            if (this.soundOn) {
-                if (sound) {
-                    sound.play();
-                    if (loop)
-                        sound.setLoop(true);
-                }
+            if (this.soundOn && sound) {
+                sound.play();
+                if (loop)
+                    sound.setLoop(true);
             }
         };
 
@@ -78,13 +75,10 @@ class Sfx {
                     sound.setLoop(false);
                 if (sound.isPlaying())
                     sound.stop();
-
-                console.log('after stopPlayback');
             }
         };
 
         this.toggleSound = function () {
-            console.log(`toggleSound: ${this.soundOn}`);
             this.soundOn = !this.soundOn;
         };
 
