@@ -1,4 +1,5 @@
-const SFX = [{ key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
+const SFX = [
+    { key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
 { key: "ufoBossExplosion", file: "/assets/sfx/explosionUfoBoss.wav", },
 { key: "rockExplosion", file: "/assets/sfx/explosionRocks.wav", },
 { key: "playerExplosion", file: "/assets/sfx/explosionPlayer.wav", },
@@ -10,7 +11,8 @@ const SFX = [{ key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
 { key: "ufoScoutFlyBy", file: "/assets/sfx/ufoScoutFlyBy.wav", },
 { key: "ufoScoutWarning", file: "/assets/sfx/ufoScoutWarningAlarm.wav", },
 
-{ key: "extraLifePickup", file: "/assets/sfx/8BitRetroSFXPack1TraditionalGameStarting08.wav", },
+    { key: "PickupCollected", file: "/assets/sfx/PickupCollected.wav", },
+    { key: "PickupDropped", file: "/assets/sfx/PickupDropped.wav", },
 
 //  Music Files
 { key: "menubgmusic", file: "/assets/music/Menu.mp3", },
@@ -24,11 +26,12 @@ class Sfx {
         this.musicVolume = 0.3;
         this.soundOn = true;
 
-        this.initialize = function () {
+        this.initialize = function (callback) {
             soundFormats('mp3', 'wav');
 
             for (var i = 0; i < SFX.length; i++) {
-                var sound = loadSound(SFX[i].file);
+                console.log(`sfx [${SFX[i].file}] loading`);
+                var sound = loadSound(SFX[i].file, callback);
                 sound.setVolume(this.sfxVolume);
                 this.sfx.push({ key: SFX[i].key, sound: sound });
                 console.log(`sfx [${SFX[i].file}] loaded`);

@@ -18,8 +18,8 @@ class Hud {
         this.extraBoxStartPos = 0;
 
         //  This must be called in preload
-        this.initialize = function () {
-            this.font = loadFont('/assets/fonts/moonhouse/Moonhouse-yE5M.ttf');
+        this.initialize = function (callback) {
+            this.font = loadFont('/assets/fonts/moonhouse/Moonhouse-yE5M.ttf', callback);
         };
 
         this.update = function (score, lives, missileCounter, shieldTimer, multishotTimer, jumpJetTimer) {

@@ -1,0 +1,20 @@
+@font-face {
+    font-family: "Moonhouse";
+    src: url("/assets/fonts/moonhouse/Moonhouse-yE5M.ttf");
+}
+
+body {
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+
+.loading {
+    font-family: 'Moonhouse';
+    margin: 20 20 20 20;
+    padding: 10 10 10 10;
+}
+
+.loading h1 {
+    font-weight: 'bolder';
+    font-size: 'larger';
+}

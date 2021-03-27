@@ -33,9 +33,16 @@ buggy can move forward and back at a speed, even though scrolling is always forw
 fix waves
 xx draw pickups
 draw other ufos
+ - std
+ - scout
+ - boss
+ - bomber
 draw craters
 handle crater bombs
 ufos can shoot
+ - scout doesn't shoot
+ - bomber
+ - boss
 hud stuffs for buggy stuffs
  - missiles
  - jumpJets
@@ -60,4 +67,8 @@ Handle plummeting
 
 Fix performance / stack crash bug
 
-make pickup collidable
+pickups
+ - make collidable
+ - add drop maker
+ - add to levels
+

@@ -2,6 +2,7 @@ const UFO_SCOUT_SPEED = 15;
 const UFO_SCOUT_DIAMETER = 120;
 const UFO_SCOUT_SFX_WARN = "ufoScoutWarning";
 const UFO_SCOUT_SFX_FLYBY = "ufoScoutFlyBy";
+
 class UfoScout {
     constructor() {
         this.collidable = true;
@@ -9,6 +10,7 @@ class UfoScout {
         this.collisionRadius = UFO_SCOUT_DIAMETER / 2;
         this.visibleRadius = UFO_SCOUT_DIAMETER;
         this.dropsPickup = true;
+        this.dropChance = 100;
 
         this.position;
         this.velocity;
@@ -45,8 +47,7 @@ class UfoScout {
                     this.state == COLLIDABLE_STATE_DEAD;
                 }
                 else {
-                    console.log(`[${this.position}] | [${this.sfxWarningPlaying}] | [${this.sfxFlyByPlaying}]`);
-                    console.log(`[${Collidable.onScreen(this)}] | [${Collidable.offLeftEdge(this)}] | [${Collidable.offRightEdge(this)}]`);
+                    //  onScreen and sound already playing, or too far to the left to render
                 }
             }
             else if (this.state == COLLIDABLE_STATE_DYING) {
@@ -80,6 +81,9 @@ class UfoScout {
                 this.explosion.initialize(this.position.x, this.position.y, 250, 200);
                 this.sfx.stopSound(UFO_SCOUT_SFX_FLYBY);
                 this.sfx.playSound("smallExplosion");
+
+                //  spawn a new pickup
+
                 this.state = COLLIDABLE_STATE_DYING;
             }
         };

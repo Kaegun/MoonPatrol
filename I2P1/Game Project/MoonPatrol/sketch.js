@@ -12,15 +12,19 @@ const KEY_SHIELD = 83;
 const KEY_MUSIC = 77;
 const KEY_ENTER = 13;
 const KEY_ESC = 27;
+const KEY_HELP = 112;
+
 //  Game state constants
 const GAME_STATE_MENU = 0;
 const GAME_STATE_PLAYING = 1;
 const GAME_STATE_DEAD = 2;
 const GAME_STATE_WON = 3;
 const GAME_STATE_PAUSED = 4;
+
 //  Sound Constants
 const SFX_MENU_BG = "menubgmusic";
 
+//  Game State
 var activeLevel = 0;
 var numLevels = 0;
 var scrollPos = 0;
@@ -29,6 +33,11 @@ var pickups = [];
 var sfx;
 
 var gameState = GAME_STATE_MENU;
+var showHelp = false;
+var toggleMenuMusic = false;
+
+//  Start screen elements
+this.starField;
 
 //  player
 var buggy;
@@ -38,29 +47,34 @@ var score = 0;
 function preload() {
     //  Loading Sound Effects and Music
     sfx = new Sfx();
-    sfx.initialize();
+    sfx.initialize(preLoadCallback);
 
     //  Loading Hud and Fonts
     hud = new Hud();
-    hud.initialize();
+    hud.initialize(preLoadCallback);
+}
+
+//  Display files as they complete loading
+function preLoadCallback(obj) {
+    var div = document.getElementById('files');
+    var label = obj.url != undefined ? `${obj.url}` : obj.font != undefined ? 'font' : 'unknown preload item';
+    var text = document.createTextNode(`loaded: ${label}`);
+    div.appendChild(text);
+    var br = document.createElement("br");
+    div.appendChild(br);
 }
 
 function setup() {
     createCanvas(windowWidth, max(800, windowHeight - 3));
 
-    numLevels = createLevels(levels, sfx);
+    numLevels = Level.createLevels(levels, sfx, pickups);
+
+    this.starField = new StarField();
+    this.starField.initialize(height);
 
     //  Move this to an initialize level method
     buggy = new Buggy();
     buggy.initialize(levels[activeLevel].startX, levels[activeLevel].floorPosY, sfx);
-
-    var puStartX = 1000;
-    for (var pp = 0; pp <= PICKUP_JUMPJETS; pp++) {
-        var pu = new Pickup();
-        pu.initialize(puStartX, levels[activeLevel].floorPosY - 35, pp, sfx);
-        pickups.push(pu);
-        puStartX += 200;
-    }
 }
 
 function draw() {
@@ -82,33 +96,85 @@ function draw() {
 }
 
 function drawMenu() {
-    //  TODO: Move this to the Menu class (if it makes sense)
+    //  Play some music
+    if (!toggleMenuMusic && !sfx.isSoundPlaying(SFX_MENU_BG)) {
+        sfx.playSound(SFX_MENU_BG, true);
+    } else if (toggleMenuMusic && sfx.isSoundPlaying(SFX_MENU_BG)) {
+        sfx.stopSound(SFX_MENU_BG);
+    }
+
     background(0); // fill the background
 
     //  Draw some stars
+    this.starField.draw();
 
-    //  Play some music
-    if (!sfx.isSoundPlaying(SFX_MENU_BG)) {
-        sfx.playSound(SFX_MENU_BG);
-    }
-
-    var textY = (height - 120) / 2;
-    textSize(120);
     stroke(128);
     strokeWeight(4);
-
     fill(255);
-    var label = 'MOON PATROL';
     textFont(hud.font); //  breaking some encapsulation rules
-    text(`${label}`, (width - textWidth(label)) / 2, textY);
-    label = "Press 'ENTER' to Start";
+    var textY = (height - 120) / 2;
+    drawTextCentered('MOON PATROL', textY, 120);
     textY += 150;
-    textSize(36);
-    text(`${label}`, (width - textWidth(label)) / 2, textY);
-    label = "Press 'F1' anytime to show the keys";
+    drawTextCentered("Press 'ENTER' to Start", textY, 36);
     textY += 66;
-    textSize(36);
-    text(`${label}`, (width - textWidth(label)) / 2, textY);
+    drawTextCentered("Press 'F1' anytime to show the keys", textY, 36);
+
+    drawHelp();
+}
+
+function drawTextCentered(label, y, size) {
+    textSize(size); //  set the size to ensure width is calculated corectly
+    drawText(label, (width - textWidth(label)) / 2, y, size);
+}
+
+function drawText(label, x, y, size) {
+    textSize(size);
+    text(label, x, y);
+}
+
+function drawHelp() {
+
+    //  Return here, rather than checking the flag everywhere else
+    if (!showHelp)
+        return;
+    //  Draw a rectangle background overlay
+    stroke(0, 0, 200, 140);
+    fill(200, 0, 0, 175);
+    var rectSide = 600;
+    var rectX = width / 2 - rectSide / 2;
+    var rectY = height / 2 - rectSide / 2;
+    rect(rectX, rectY, rectSide, rectSide);
+
+    //  Key help
+    fill(255);
+    stroke(128);
+    strokeWeight(2);
+    textFont(hud.font); //  breaking some encapsulation rules
+    var textY = rectY + 50;
+    drawTextCentered("Help", textY, 48);
+
+    //  Could possibly put this in an array
+    var textX = rectX + 25;
+    textY += 68;
+    drawText("[F1]:\tDisplay this Menu", textX, textY, 36);
+    textY += 51;
+    drawText("[Left Arrow]:\tSlow Down", textX, textY, 36);
+    textY += 51;
+    drawText("[Right Arrow]:\tAccelerate", textX, textY, 36);
+    textY += 51;
+    drawText("[Spacebar]:\tJump", textX, textY, 36);
+    textY += 51;
+    drawText("[Left Ctrl]:\tFire1", textX, textY, 36);
+    textY += 51;
+    drawText("[Z]:\tFire2", textX, textY, 36);
+    textY += 51;
+    drawText("[S]:\tShield", textX, textY, 36);
+    textY += 51;
+    drawText("[M]:\tToggle music", textX, textY, 36);
+    textY += 51;
+    drawText("[ENTER]:\tAccept", textX, textY, 36);
+    textY += 51;
+    drawText("[ESC]:\tCancel", textX, textY, 36);
 }
 
 function drawPlaying() {
@@ -153,9 +219,19 @@ function checkCollisions() {
 function checkEnemyCollision(enemy, projectiles) {
     for (var i = projectiles.length - 1; i >= 0; i--) {
         if (Collidable.collision(enemy, projectiles[i].position)) {
+            projectiles.splice(i, 1);
             enemy.destroy();
             score += enemy.scoreValue;
-            projectiles.splice(i, 1);
+            if (enemy.dropsPickup) {
+                //  Assume the pickup dropped is random
+                var pu = Pickup.createRandomPickup(enemy.dropChance,
+                    enemy.position.x + scrollPos,
+                    enemy.position.y,
+                    enemy.speed,
+                    levels[activeLevel].floorPosY);
+                sfx.playSound("PickupDropped");
+                pickups.push(pu);
+            }
             return;
         }
     }
@@ -226,12 +302,24 @@ function keyPressedMenu() {
     switch (keyCode) {
         case KEY_ENTER:
             //  continue / start / next level, etc.
-            gameState = GAME_STATE_PLAYING;
-            sfx.stopSound(SFX_MENU_BG);
-            levels[activeLevel].start();
+            if (showHelp)
+                showHelp = false;
+            else {
+                gameState = GAME_STATE_PLAYING;
+                sfx.stopSound(SFX_MENU_BG);
+                levels[activeLevel].start();
+            }
             break;
         case KEY_ESC:
             //  restart, back, etc.
+            if (showHelp)
+                showHelp = false;
+            break;
+        case KEY_HELP:
+            showHelp = !showHelp;
+            break;
+        case KEY_MUSIC:
+            toggleMenuMusic = !toggleMenuMusic;
             break;
     }
 }
@@ -241,9 +329,18 @@ function keyPressedPlaying() {
     switch (keyCode) {
         case KEY_ENTER:
             //  continue / start / next level, etc.
+            if (showHelp)
+                showhelp = false;
             break;
         case KEY_ESC:
             //  restart, back, etc.
+            if (showHelp)
+                showhelp = false;
+            else
+                gameState = GAME_STATE_PAUSED;
+            break;
+        case KEY_HELP:
+            showHelp = true;
             break;
         case KEY_SLOWDOWN:
             buggy.decelerate(true);

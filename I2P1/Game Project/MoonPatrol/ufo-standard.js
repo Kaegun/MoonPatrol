@@ -1,5 +1,9 @@
 const UFO_STD_SIDELEN = 60;
 const UFO_STD_DIAMETER = 30;
+const UFO_STD_FWD_SPEED = 6;
+const UFO_STD_CLIMB_SPEED = 3;
+
+const UFO_STD_SFX_FLYBY = "ufoStandardFlyBy";
 
 class UfoStandard {
     constructor() {
@@ -12,8 +16,7 @@ class UfoStandard {
         this.position;
         this.rotation = 0;
         this.direction = 1;
-        this.forwardSpeed = 4;
-        this.climbSpeed = 3;
+        this.speed;
         this.maxY;
         this.minY;
         this.sfx;
@@ -27,17 +30,23 @@ class UfoStandard {
             this.maxY = y + 50;
             this.minY = y - 50;
             this.sfx = sfx;
+            this.speed = UFO_STD_FWD_SPEED;
 
             this.state = COLLIDABLE_STATE_ALIVE;
         };
 
         this.update = function () {
             //  If the Ufo is off the right edge, mark it dead
-            if (Collidable.offRightEdge(this))
+            if (Collidable.offRightEdge(this)) {
                 this.state = COLLIDABLE_STATE_DEAD;
+                this.sfx.stopSound(UFO_STD_SFX_FLYBY);
+                this.soundPlaying = false;
+                console.log('Ufo should be dead now');
+            }
+
             else if (Collidable.onScreen(this) && !this.soundPlaying) {
                 //  Play ufo sound loop.
-                this.sfx.playSound("ufoStandardFlyBy", true);
+                this.sfx.playSound(UFO_STD_SFX_FLYBY, true);
                 this.soundPlaying = true;
             }
 
@@ -49,7 +58,7 @@ class UfoStandard {
                 else if (this.position.y < this.minY)
                     this.direction = 1;
 
-                this.position.add(createVector(this.forwardSpeed, this.climbSpeed * this.direction));
+                this.position.add(createVector(UFO_STD_FWD_SPEED, UFO_STD_CLIMB_SPEED * this.direction));
             } else if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.update();
                 if (!this.explosion.alive())
@@ -105,7 +114,7 @@ class UfoStandard {
             if (this.state == COLLIDABLE_STATE_ALIVE) {
                 this.explosion = new Explosion();
                 this.explosion.initialize(this.position.x, this.position.y, 250, 400);
-                this.sfx.stopSound("ufoStandardFlyBy");
+                this.sfx.stopSound(UFO_STD_SFX_FLYBY);
                 this.sfx.playSound("smallExplosion");
                 this.state = COLLIDABLE_STATE_DYING;
             }

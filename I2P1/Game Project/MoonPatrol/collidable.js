@@ -25,6 +25,4 @@ class Collidable {
     static offRightEdge(collidable) {
         return collidable.position.x > width + collidable.visibleRadius;
     }
-
-    //  TODO: destroy might also be static
 }

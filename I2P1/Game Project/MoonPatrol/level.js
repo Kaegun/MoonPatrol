@@ -1,29 +1,31 @@
-var levelDesigns = [{
-    floorHeight: 0.3,
-    startX: 250,
-    width: 10,
-    bgColor: { r: 105, g: 105, b: 105 },
-    skyColor: { r: 25, g: 25, b: 112 },
-    planets: [{ x: 400, y: 200, color: { r: 238, g: 130, b: 238 }, accentColor: { r: 186, g: 85, b: 211 }, diameter: 280 },
-    { x: 900, y: 250, color: { r: 175, g: 238, b: 238 }, accentColor: { r: 95, g: 158, b: 160 }, diameter: 160 },],
-    rocks: [],
-    mountains: [],
-    craters: [],
-    enemies: [{ type: UFO_STANDARD, count: 3, waves: 10, },
-    { type: UFO_SCOUT, count: 1, waves: 5, }],
-},];
-
-function createLevels(levels, sfx) {
-    for (var i = 0; i < levelDesigns.length; i++) {
-        var l = new Level();
-        l.initialize(i, sfx);
-        levels.push(l);
-    }
-
-    return levels.length;
-}
+const levelDesigns = [
+    {
+        floorHeight: 0.3,
+        startX: 250,
+        width: 10,
+        bgColor: { r: 105, g: 105, b: 105 },
+        skyColor: { r: 25, g: 25, b: 112 },
+        planets: [{ x: 400, y: 200, color: { r: 238, g: 130, b: 238 }, accentColor: { r: 186, g: 85, b: 211 }, diameter: 280 },
+        { x: 900, y: 250, color: { r: 175, g: 238, b: 238 }, accentColor: { r: 95, g: 158, b: 160 }, diameter: 160 },],
+        rocks: [],
+        mountains: [],
+        craters: [],
+        enemies: [{ type: UFO_STANDARD, count: 3, waves: 10, },
+        { type: UFO_SCOUT, count: 1, waves: 5, }],
+    },
+];
 
 class Level {
+    static createLevels(levels, sfx, pickups) {
+        for (var i = 0; i < levelDesigns.length; i++) {
+            var l = new Level();
+            l.initialize(i, sfx, pickups);
+            levels.push(l);
+        }
+
+        return levels.length;
+    }
+
     constructor() {
         this.groundColor;
         this.skyColor;
@@ -43,12 +45,13 @@ class Level {
         this.ufoSpawner;
 
         this.sfx;
+        this.pickups;
         this.playingMusic = true;
         this.bgMusic;
 
         this.scrollPos = 0;
 
-        this.initialize = function (idx, sfx) {
+        this.initialize = function (idx, sfx, pickups) {
 
             this.levelNumber = idx + 1;
             this.floorHeight = height * levelDesigns[idx].floorHeight;
@@ -57,6 +60,7 @@ class Level {
             this.groundColor = color(levelDesigns[idx].bgColor.r, levelDesigns[idx].bgColor.g, levelDesigns[idx].bgColor.b);
             this.skyColor = color(levelDesigns[idx].skyColor.r, levelDesigns[idx].skyColor.g, levelDesigns[idx].skyColor.b);
             this.sfx = sfx;
+            this.pickups = pickups;
 
             this.levelWidth = width * levelDesigns[idx].width;
             this.bgMusic = `level${idx + 1}bgmusic`;
@@ -109,6 +113,10 @@ class Level {
                 var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves);
                 this.enemies.push(...ufos);
             }
+
+            //  Test creating a pcikup in the level
+            var pu = Pickup.createRandomPickup(100, 1000, this.floorPosY, 0, this.floorPosY);
+            this.pickups.push(pu);
         };
 
         this.start = function () {
@@ -126,8 +134,10 @@ class Level {
         this.updateObjects = function (objects) {
             for (var i = objects.length - 1; i >= 0; i--) {
                 objects[i].update();
-                if (!Collidable.alive(objects[i]))
+                if (!Collidable.alive(objects[i])) {
+                    console.log('object is dead, removing');
                     objects.splice(i, 1);
+                }
             }
         };
 
@@ -157,6 +167,7 @@ class Level {
             this.drawObjects(this.bases);
             pop();
 
+            console.log(`# Active UFOs: [${this.enemies.length}]`);
             this.drawObjects(this.enemies);
         };
 
