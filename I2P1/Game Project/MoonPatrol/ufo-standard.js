@@ -119,5 +119,10 @@ class UfoStandard {
                 this.state = COLLIDABLE_STATE_DYING;
             }
         };
+
+        this.stopAllSound = function () {
+            if (this.sfx.isSoundPlaying(UFO_STD_SFX_FLYBY))
+                this.sfx.stopSound(UFO_STD_SFX_FLYBY);
+        };
     }
 }

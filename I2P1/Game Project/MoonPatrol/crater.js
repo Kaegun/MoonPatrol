@@ -1,32 +1,42 @@
+const CRATER_NORMAL = 1;
+const CRATER_LARGE = 2;
+
 //  Crater class
 //  can be drawn either by level, or caused by bomb from enemy
 class Crater {
     constructor() {
         this.color;
         this.points = [];
+        this.position;
+        this.type;
+        this.depth;
+        this.width;
 
-        this.initialize = function (floorPos_y, floorHeight, backgroundColor) {
+        this.initialize = function (startX, startY, floorHeight, backgroundColor, type) {
+            this.position = createVector(startX, startY);
             this.color = backgroundColor;
-            var depth = floorHeight * 0.4 + random(-15, 15);
-            var xPos = width / 2 + random(-100, 100);
-            var craterWidth = depth * 2;
+            this.depth = min(floorHeight, (floorHeight * 0.4 * type + random(-15, 15)));
+            this.width = this.depth * 2;
             var currentWidth = 0;
             var currentDepth = 0;
 
-            this.points.push({ x: xPos, y: floorPos_y });
+            this.points.push({ x: this.position.x, y: this.position.y });
 
-            while (currentWidth < craterWidth) {
+            while (currentWidth < this.width) {
                 var x = random(1, 5);
                 currentWidth += x;
-                var y = random(1, 5) * (currentWidth < craterWidth / 2 ? 1 : -1);
+                var y = random(1, 5) * (currentWidth < this.width / 2 ? 1 : -1);
                 currentDepth += y;
-                var p = { x: xPos + currentWidth, y: (floorPos_y + currentDepth < floorPos_y ? floorPos_y : floorPos_y + currentDepth) };
+                var p = { x: this.position.x + currentWidth, y: (this.position.y + currentDepth < this.position.y ? this.position.y : this.position.y + currentDepth) };
                 this.points.push(p);
             }
 
             //  Make sure the crater lines up to the floor again.
-            if (this.points[this.points.length - 1].y > floorPos_y)
-                this.points[this.points.length - 1].y = floorPos_y;
+            if (this.points[this.points.length - 1].y > this.position.y)
+                this.points[this.points.length - 1].y = this.position.y;
+
+            //  After drawn, place the position.x at the center of the crater
+            this.position.x += this.width / 2;
         };
 
         this.draw = function () {
@@ -43,6 +53,9 @@ class Crater {
         }
 
         //  Test whether the player fell into the crater
-        this.collission = function (x, y) { };
+        this.collision = function (vector) {
+            console.log(`${this.position}|${vector} ${this.position.dist(vector)} < ${this.width / 2}`);
+            return this.position.dist(vector) < this.width / 2;
+        };
     }
 }

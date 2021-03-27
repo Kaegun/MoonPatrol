@@ -100,7 +100,7 @@ class Level {
 
             //  craters
             var crater = new Crater();
-            crater.initialize(this.floorPosY, this.floorHeight, this.skyColor);
+            crater.initialize(800, this.floorPosY, this.floorHeight, this.skyColor, CRATER_NORMAL);
             this.craters.push(crater);
 
             //  base(s)
@@ -183,15 +183,22 @@ class Level {
             console.log(`toggleMusic: ${this.sfx.soundOn} - ${this.playingMusic}`);
             if (this.playingMusic) {
                 console.log('level stopping music');
-                this.sfx.stopMusic(this.bgMusic);
+                this.sfx.stopSound(this.bgMusic);
 
             }
             else {
-                this.sfx.playMusic(this.bgMusic);
+                this.sfx.playSound(this.bgMusic);
                 console.log('level starting music');
             }
 
             this.playingMusic = !this.playingMusic;
+        };
+
+        this.stopAllSound = function () {
+            this.sfx.stopSound(this.bgMusic);
+            for (var i = 0; i < this.enemies.length; i++) {
+                this.enemies[i].stopAllSound();
+            }
         };
     }
 }

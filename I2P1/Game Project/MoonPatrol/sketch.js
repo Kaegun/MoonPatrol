@@ -22,7 +22,10 @@ const GAME_STATE_WON = 3;
 const GAME_STATE_PAUSED = 4;
 
 //  Sound Constants
+const SFX_SOUND_PICKUP_DROPPED = "pickupDropped";
 const SFX_MENU_BG = "menubgmusic";
+const SFX_PLAYER_DEAD_BG = "defeatmusic";
+const SFX_PLAYER_WON_BG = "victorymusic";
 
 //  Game State
 var activeLevel = 0;
@@ -35,6 +38,7 @@ var sfx;
 var gameState = GAME_STATE_MENU;
 var showHelp = false;
 var toggleMenuMusic = false;
+var defeatMusicPlayed = false;
 
 //  Start screen elements
 this.starField;
@@ -66,6 +70,7 @@ function preLoadCallback(obj) {
 
 function setup() {
     createCanvas(windowWidth, max(800, windowHeight - 3));
+    frameRate(30);
 
     numLevels = Level.createLevels(levels, sfx, pickups);
 
@@ -214,6 +219,14 @@ function checkCollisions() {
             pickups.splice(i, 1);
         }
     }
+
+    for (var i = 0; i < levels[activeLevel].craters.length; i++) {
+        var crater = levels[activeLevel].craters[i];
+        if (crater.collision(buggy.worldPosition)) {
+            buggy.setPlummeting(true);
+            console.log('plummeting');
+        }
+    }
 }
 
 function checkEnemyCollision(enemy, projectiles) {
@@ -229,7 +242,7 @@ function checkEnemyCollision(enemy, projectiles) {
                     enemy.position.y,
                     enemy.speed,
                     levels[activeLevel].floorPosY);
-                sfx.playSound("PickupDropped");
+                sfx.playSound(SFX_SOUND_PICKUP_DROPPED);
                 pickups.push(pu);
             }
             return;
@@ -238,20 +251,34 @@ function checkEnemyCollision(enemy, projectiles) {
 }
 
 function update() {
-    scrollPos += this.buggy.speed;
 
     //  call update on all objects to update positions
     buggy.update(scrollPos);
-
-    updateObjects(pickups);
-
-    levels[activeLevel].update(scrollPos);
 
     hud.update(score, buggy.lives,
         buggy.getMissileCount(),
         buggy.getShieldTimer(),
         buggy.getMultishotTimer(),
         buggy.getJumpJetTimer());
+
+    //  Only scroll the screen when the buggy is alive
+    if (buggy.alive()) {
+        scrollPos += this.buggy.speed;
+        updateObjects(pickups);
+        levels[activeLevel].update(scrollPos);
+    }
+    else {
+        levels[activeLevel].stopAllSound();
+        if (!sfx.isSoundPlaying(SFX_PLAYER_DEAD_BG)) {
+            if (!defeatMusicPlayed) {
+                sfx.playSound(SFX_PLAYER_DEAD_BG);
+                defeatMusicPlayed = true;
+            }
+            else if (!sfx.isSoundPlaying(SFX_MENU_BG)) {
+                sfx.playSound(SFX_MENU_BG);
+            }
+        }
+    }
 }
 
 function updateObjects(objects) {

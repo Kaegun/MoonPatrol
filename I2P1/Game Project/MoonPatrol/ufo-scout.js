@@ -87,5 +87,12 @@ class UfoScout {
                 this.state = COLLIDABLE_STATE_DYING;
             }
         };
+
+        this.stopAllSound = function () {
+            if (this.sfx.isSoundPlaying(UFO_SCOUT_SFX_FLYBY))
+                this.sfx.stopSound(UFO_SCOUT_SFX_FLYBY);
+            if (this.sfx.isSoundPlaying(UFO_SCOUT_SFX_WARN))
+                this.sfx.stopSound(UFO_SCOUT_SFX_WARN);
+        };
     }
 }

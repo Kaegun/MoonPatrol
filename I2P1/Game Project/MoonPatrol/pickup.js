@@ -78,7 +78,7 @@ class Pickup {
         };
 
         this.playCollectedSound = function () {
-            this.sfx.playSound("PickupCollected");
+            this.sfx.playSound("pickupCollected");
         };
 
         this.draw = function () {

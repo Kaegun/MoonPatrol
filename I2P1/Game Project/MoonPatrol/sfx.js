@@ -1,22 +1,28 @@
 const SFX = [
     { key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
-{ key: "ufoBossExplosion", file: "/assets/sfx/explosionUfoBoss.wav", },
-{ key: "rockExplosion", file: "/assets/sfx/explosionRocks.wav", },
-{ key: "playerExplosion", file: "/assets/sfx/explosionPlayer.wav", },
-{ key: "singleshot", file: "/assets/sfx/ShotSingle.wav", },
-{ key: "multishot", file: "/assets/sfx/ShotMulti.wav", },
-{ key: "playerDeath", file: "/assets/sfx/SFXARCADIAGameFinish10.wav", },
-{ key: "jump", file: "/assets/sfx/jump.wav", },
-{ key: "ufoStandardFlyBy", file: "/assets/sfx/ufoStandardFlyBy.wav", },
-{ key: "ufoScoutFlyBy", file: "/assets/sfx/ufoScoutFlyBy.wav", },
-{ key: "ufoScoutWarning", file: "/assets/sfx/ufoScoutWarningAlarm.wav", },
+    { key: "ufoBossExplosion", file: "/assets/sfx/explosionUfoBoss.wav", },
+    { key: "rockExplosion", file: "/assets/sfx/explosionRocks.wav", },
+    { key: "playerExplosion", file: "/assets/sfx/explosionPlayer.wav", },
+    { key: "singleshot", file: "/assets/sfx/ShotSingle.wav", },
+    { key: "multishot", file: "/assets/sfx/ShotMulti.wav", },
+    { key: "playerDeath", file: "/assets/sfx/SFXARCADIAGameFinish10.wav", },
+    { key: "jump", file: "/assets/sfx/jump.wav", },
+    { key: "jumpJets", file: "/assets/sfx/JumpJets.wav", },
+    { key: "ufoStandardFlyBy", file: "/assets/sfx/ufoStandardFlyBy.wav", },
+    { key: "ufoScoutFlyBy", file: "/assets/sfx/ufoScoutFlyBy.wav", },
+    { key: "ufoScoutWarning", file: "/assets/sfx/ufoScoutWarningAlarm.wav", },
+    { key: "gameOver", file: "/assets/sfx/GameOver01.wav", },
 
-    { key: "PickupCollected", file: "/assets/sfx/PickupCollected.wav", },
-    { key: "PickupDropped", file: "/assets/sfx/PickupDropped.wav", },
+    { key: "pickupCollected", file: "/assets/sfx/PickupCollected.wav", },
+    { key: "pickupDropped", file: "/assets/sfx/PickupDropped.wav", },
 
-//  Music Files
-{ key: "menubgmusic", file: "/assets/music/Menu.mp3", },
-{ key: "level1bgmusic", file: "/assets/music/Loop1.wav", },
+    //  Music Files
+    { key: "menubgmusic", file: "/assets/music/Menu.mp3", },
+    { key: "defeatmusic", file: "/assets/music/Defeat.mp3", },
+    { key: "victorymusic", file: "/assets/music/Triumph.mp3", },
+    { key: "level1bgmusic", file: "/assets/music/Loop1.wav", },
+    { key: "level2bgmusic", file: "/assets/music/Loop2.wav", },
+    { key: "level3bgmusic", file: "/assets/music/Loop3.wav", },
 ];
 
 class Sfx {
