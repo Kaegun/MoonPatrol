@@ -11,7 +11,15 @@ const KEY_JUMP = 32;
 const KEY_SHIELD = 83;
 const KEY_MUSIC = 77;
 const KEY_ENTER = 13;
-const KEY_ESC = 0;
+const KEY_ESC = 27;
+//  Game state constants
+const GAME_STATE_MENU = 0;
+const GAME_STATE_PLAYING = 1;
+const GAME_STATE_DEAD = 2;
+const GAME_STATE_WON = 3;
+const GAME_STATE_PAUSED = 4;
+//  Sound Constants
+const SFX_MENU_BG = "menubgmusic";
 
 var activeLevel = 0;
 var numLevels = 0;
@@ -20,7 +28,7 @@ var levels = [];
 var pickups = [];
 var sfx;
 
-var pause = true;
+var gameState = GAME_STATE_MENU;
 
 //  player
 var buggy;
@@ -57,6 +65,54 @@ function setup() {
 
 function draw() {
 
+    switch (gameState) {
+        case GAME_STATE_MENU:
+            drawMenu();
+            break;
+        case GAME_STATE_PLAYING:
+            drawPlaying();
+            break;
+        case GAME_STATE_DEAD:
+            drawDead();
+            break;
+        case GAME_STATE_WON:
+            drawWon();
+            break;
+    }
+}
+
+function drawMenu() {
+    //  TODO: Move this to the Menu class (if it makes sense)
+    background(0); // fill the background
+
+    //  Draw some stars
+
+    //  Play some music
+    if (!sfx.isSoundPlaying(SFX_MENU_BG)) {
+        sfx.playSound(SFX_MENU_BG);
+    }
+
+    var textY = (height - 120) / 2;
+    textSize(120);
+    stroke(128);
+    strokeWeight(4);
+
+    fill(255);
+    var label = 'MOON PATROL';
+    textFont(hud.font); //  breaking some encapsulation rules
+    text(`${label}`, (width - textWidth(label)) / 2, textY);
+    label = "Press 'ENTER' to Start";
+    textY += 150;
+    textSize(36);
+    text(`${label}`, (width - textWidth(label)) / 2, textY);
+    label = "Press 'F1' anytime to show the keys";
+    textY += 66;
+    textSize(36);
+    text(`${label}`, (width - textWidth(label)) / 2, textY);
+}
+
+function drawPlaying() {
+
     //  check for collisions
     checkCollisions();
 
@@ -72,6 +128,10 @@ function draw() {
 
     hud.draw();
 }
+
+function drawDead() { }
+
+function drawWon() { }
 
 function checkCollisions() {
     for (var i = 0; i < levels[activeLevel].enemies.length; i++) {
@@ -91,10 +151,11 @@ function checkCollisions() {
 }
 
 function checkEnemyCollision(enemy, projectiles) {
-    for (var i = 0; i < projectiles.length; i++) {
-        if (enemy.collision(projectiles[i].position)) {
+    for (var i = projectiles.length - 1; i >= 0; i--) {
+        if (Collidable.collision(enemy, projectiles[i].position)) {
             enemy.destroy();
             score += enemy.scoreValue;
+            projectiles.splice(i, 1);
             return;
         }
     }
@@ -129,17 +190,53 @@ function drawObjects(objects) {
     }
 }
 
+/*
+    keys:
+        LeftCtrl = 17   - Fire1
+        Z: 90           - Fire2
+        LeftArrow: 37   - Slow
+        RightArrow: 39  - Accelerate
+        Spacebar: 32    - Jump
+        S: 83           - Shield
+        M: 77           - Toggle music
+        ENTER:          - Accept
+        ESC:            - Cancel
+        F1:             - Show keys
+*/
+
 function keyPressed() {
-    /*
-        keys:
-            LeftCtrl = 17   - Fire1
-            Z: 90           - Fire2
-            LeftArrow: 37   - Slow
-            RightArrow: 39  - Accelerate
-            Spacebar: 32    - Jump
-            S: 83           - Shield
-            M: 77           - Toggle music
-    */
+
+    switch (gameState) {
+        case GAME_STATE_MENU:
+            keyPressedMenu();
+            break;
+        case GAME_STATE_PLAYING:
+            keyPressedPlaying();
+            break;
+        case GAME_STATE_DEAD:
+            keyPressedDead();
+            break;
+        case GAME_STATE_WON:
+            keyPressedWon();
+            break;
+    }
+}
+
+function keyPressedMenu() {
+    switch (keyCode) {
+        case KEY_ENTER:
+            //  continue / start / next level, etc.
+            gameState = GAME_STATE_PLAYING;
+            sfx.stopSound(SFX_MENU_BG);
+            levels[activeLevel].start();
+            break;
+        case KEY_ESC:
+            //  restart, back, etc.
+            break;
+    }
+}
+
+function keyPressedPlaying() {
 
     switch (keyCode) {
         case KEY_ENTER:

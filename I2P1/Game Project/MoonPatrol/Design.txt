@@ -39,11 +39,25 @@ ufos can shoot
 hud stuffs for buggy stuffs
  - missiles
  - jumpJets
- - multishot
+   - need particle system
+ - multishot xx
  - shield
+   - handle damage
+   - clean up the art
 handle death
 handle level transitions
 collision 
  - bullets to buggy
 
 level transitions
+main menu
+ - press to start
+
+Need to wait for level start before calling init on level. 
+ - else music is playing as well as ufos.
+
+Handle plummeting
+
+Fix performance / stack crash bug
+
+make pickup collidable

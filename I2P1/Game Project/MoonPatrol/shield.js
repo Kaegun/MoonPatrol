@@ -46,6 +46,7 @@ class Shield {
                 ellipse(this.position.x, this.position.y, this.diameter);
 
                 var smaller = this.diameter * 2 / 3;
+                noStroke();
                 fill(230, 230, 250, 70);
                 ellipse(this.position.x, this.position.y, smaller);
 

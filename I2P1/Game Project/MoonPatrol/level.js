@@ -9,8 +9,8 @@ var levelDesigns = [{
     rocks: [],
     mountains: [],
     craters: [],
-    enemies: [{ type: UFO_STANDARD, count: 3, waves: 2, },
-    { type: UFO_SCOUT, count: 1, waves: 2, }],
+    enemies: [{ type: UFO_STANDARD, count: 3, waves: 10, },
+    { type: UFO_SCOUT, count: 1, waves: 5, }],
 },];
 
 function createLevels(levels, sfx) {
@@ -104,19 +104,17 @@ class Level {
             base.initialize(0, this.floorPosY, "left", color(32, 178, 170), color(255, 99, 71));
             this.bases.push(base);
 
-            this.ufoSpawner = new UfoSpawner();
-            this.ufoSpawner.initialize(this.sfx, this.levelWidth);
-            console.table(levelDesigns[idx].enemies);
             for (var i = 0; i < levelDesigns[idx].enemies.length; i++) {
                 var ufo = levelDesigns[idx].enemies[i];
-                var ufos = this.ufoSpawner.spawnUfos(ufo.type, ufo.count, ufo.waves);
-                console.table(ufos);
+                var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves);
                 this.enemies.push(...ufos);
             }
+        };
+
+        this.start = function () {
 
             //  Start level bg music
-            this.sfx.playMusic(this.bgMusic, true);
-
+            this.sfx.playSound(this.bgMusic, true);
         };
 
         this.update = function (scrollPos) {
@@ -128,11 +126,11 @@ class Level {
         this.updateObjects = function (objects) {
             for (var i = objects.length - 1; i >= 0; i--) {
                 objects[i].update();
-                if (!objects[i].alive())
+                if (!Collidable.alive(objects[i]))
                     objects.splice(i, 1);
             }
         };
-        
+
         this.draw = function () {
             background(this.skyColor); // fill the sky
 
@@ -164,6 +162,8 @@ class Level {
 
         this.drawObjects = function (objects) {
             for (var i = 0; i < objects.length; i++) {
+                if (objects[i].collidable && !Collidable.onScreen(objects[i]))
+                    continue;
                 objects[i].draw();
             }
         };

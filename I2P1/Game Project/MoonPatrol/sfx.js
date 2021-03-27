@@ -7,16 +7,19 @@ const SFX = [{ key: "smallExplosion", file: "/assets/sfx/explosionSmall.wav", },
 { key: "playerDeath", file: "/assets/sfx/SFXARCADIAGameFinish10.wav", },
 { key: "jump", file: "/assets/sfx/jump.wav", },
 { key: "ufoStandardFlyBy", file: "/assets/sfx/ufoStandardFlyBy.wav", },
-{ key: "extraLifePickup", file: "/assets/sfx/8BitRetroSFXPack1TraditionalGameStarting08.wav", },
-];
+{ key: "ufoScoutFlyBy", file: "/assets/sfx/ufoScoutFlyBy.wav", },
+{ key: "ufoScoutWarning", file: "/assets/sfx/ufoScoutWarningAlarm.wav", },
 
-const MUSIC = [{ key: "level1bgmusic", file: "/assets/music/Loop1.wav", },
+{ key: "extraLifePickup", file: "/assets/sfx/8BitRetroSFXPack1TraditionalGameStarting08.wav", },
+
+//  Music Files
+{ key: "menubgmusic", file: "/assets/music/Menu.mp3", },
+{ key: "level1bgmusic", file: "/assets/music/Loop1.wav", },
 ];
 
 class Sfx {
     constructor() {
         this.sfx = [];
-        this.music = [];
         this.sfxVolume = 0.1;
         this.musicVolume = 0.3;
         this.soundOn = true;
@@ -29,13 +32,6 @@ class Sfx {
                 sound.setVolume(this.sfxVolume);
                 this.sfx.push({ key: SFX[i].key, sound: sound });
                 console.log(`sfx [${SFX[i].file}] loaded`);
-            }
-
-            for (var i = 0; i < MUSIC.length; i++) {
-                var sound = loadSound(MUSIC[i].file);
-                sound.setVolume(this.musicVolume);
-                this.music.push({ key: MUSIC[i].key, sound: sound });
-                console.log(`music [${MUSIC[i].file}] loaded`);
             }
         };
 
@@ -52,18 +48,8 @@ class Sfx {
                 return false;
         };
 
-        this.playMusic = function (key, loop) {
-            var sound = this.findSoundFile(this.music, key);
-            this.startPlayback(sound, loop);
-        };
-
         this.stopSound = function (key) {
             var sound = this.findSoundFile(this.sfx, key);
-            this.stopPlayback(sound);
-        };
-
-        this.stopMusic = function (key) {
-            var sound = this.findSoundFile(this.music, key);
             this.stopPlayback(sound);
         };
 

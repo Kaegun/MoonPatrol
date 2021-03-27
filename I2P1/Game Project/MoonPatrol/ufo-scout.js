@@ -1,16 +1,23 @@
 const UFO_SCOUT_SPEED = 15;
 const UFO_SCOUT_DIAMETER = 120;
+const UFO_SCOUT_SFX_WARN = "ufoScoutWarning";
+const UFO_SCOUT_SFX_FLYBY = "ufoScoutFlyBy";
 class UfoScout {
     constructor() {
+        this.collidable = true;
         this.scoreValue = 300;
+        this.collisionRadius = UFO_SCOUT_DIAMETER / 2;
+        this.visibleRadius = UFO_SCOUT_DIAMETER;
         this.dropsPickup = true;
 
         this.position;
         this.velocity;
         this.speed;
         this.sfx;
-        this.state = UFO_STATE_ALIVE;
         this.explosion;
+        this.state = COLLIDABLE_STATE_ALIVE;
+        this.sfxWarningPlaying = false;
+        this.sfxFlyByPlaying = false;
 
         this.initialize = function (x, y, sfx, speedFactor) {
             this.sfx = sfx;
@@ -20,49 +27,61 @@ class UfoScout {
         };
 
         this.update = function () {
-            if (this.state == UFO_STATE_ALIVE)
+            if (this.state == COLLIDABLE_STATE_ALIVE) {
                 this.position.add(p5.Vector.mult(this.velocity, this.speed));
-            else if (this.state == UFO_STATE_DYING) {
+                if (this.position.x < -this.visibleRadius && this.position.x > (-this.visibleRadius * 4) && !this.sfxWarningPlaying) {
+                    this.sfx.playSound(UFO_SCOUT_SFX_WARN);
+                    this.sfxWarningPlaying = true;
+                } else if (Collidable.onScreen(this) && !this.sfxFlyByPlaying) {
+                    this.sfx.playSound(UFO_SCOUT_SFX_FLYBY, true);
+                    this.sfxFlyByPlaying = true;
+                    if (this.sfxWarningPlaying) {
+                        this.sfx.stopSound(UFO_SCOUT_SFX_WARN);
+                        this.sfxWarningPlaying = false;
+                    }
+                } else if (this.sfxFlyByPlaying && Collidable.offRightEdge(this)) {
+                    this.sfxFlyByPlaying = false;
+                    this.sfx.stopSound(UFO_SCOUT_SFX_FLYBY);
+                    this.state == COLLIDABLE_STATE_DEAD;
+                }
+                else {
+                    console.log(`[${this.position}] | [${this.sfxWarningPlaying}] | [${this.sfxFlyByPlaying}]`);
+                    console.log(`[${Collidable.onScreen(this)}] | [${Collidable.offLeftEdge(this)}] | [${Collidable.offRightEdge(this)}]`);
+                }
+            }
+            else if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.update();
                 if (!this.explosion.alive())
-                    this.state = UFO_STATE_DEAD;
+                    this.state = COLLIDABLE_STATE_DEAD;
             }
         };
 
         this.draw = function () {
-            if (this.state == UFO_STATE_ALIVE) {
+            if (this.state == COLLIDABLE_STATE_ALIVE) {
                 push();
                 translate(this.position.x, this.position.y);
                 fill(47, 79, 79);
                 ellipse(0, 0, UFO_SCOUT_DIAMETER * 1.1, UFO_SCOUT_DIAMETER / 2);
                 fill(95, 158, 160);
                 ellipse(0, -10, UFO_SCOUT_DIAMETER, UFO_SCOUT_DIAMETER / 2);
+                fill(192, 192, 192);
+                ellipse(0, -40, UFO_SCOUT_DIAMETER * 0.3, UFO_SCOUT_DIAMETER * 0.15);
+
                 pop();
             }
-            else if (this.state == UFO_STATE_DYING) {
+            else if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.draw();
             }
         };
 
-        this.collision = function (vector) {
-            if (this.state == UFO_STATE_ALIVE) {
-                return this.position.dist(vector) < UFO_SCOUT_DIAMETER / 2;
-            }
-            else return false;
-        };
-
         this.destroy = function () {
-            if (this.state == UFO_STATE_ALIVE) {
+            if (this.state == COLLIDABLE_STATE_ALIVE) {
                 this.explosion = new Explosion();
                 this.explosion.initialize(this.position.x, this.position.y, 250, 200);
-                this.sfx.stopSound("ufoScoutWhoosh");
+                this.sfx.stopSound(UFO_SCOUT_SFX_FLYBY);
                 this.sfx.playSound("smallExplosion");
-                this.state = UFO_STATE_DYING;
+                this.state = COLLIDABLE_STATE_DYING;
             }
-        };
-
-        this.alive = function () {
-            return this.state != UFO_STATE_DEAD;
         };
     }
 }

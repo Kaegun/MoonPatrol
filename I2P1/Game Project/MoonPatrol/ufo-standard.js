@@ -1,11 +1,15 @@
+const UFO_STD_SIDELEN = 60;
+const UFO_STD_DIAMETER = 30;
+
 class UfoStandard {
     constructor() {
+        this.collidable = true;
         this.scoreValue = 100;
+        this.collisionRadius = UFO_STD_SIDELEN / 2;
+        this.visibleRadius = UFO_STD_SIDELEN + UFO_STD_DIAMETER;
         this.dropsPickup = false;
 
         this.position;
-        this.sideLen = 60;
-        this.sphereDiameter = 30;
         this.rotation = 0;
         this.direction = 1;
         this.forwardSpeed = 4;
@@ -16,6 +20,7 @@ class UfoStandard {
         this.state;
         this.explosion;
         this.deathCounter = 0;
+        this.soundPlaying = false;
 
         this.initialize = function (x, y, sfx) {
             this.position = createVector(x, y);
@@ -23,31 +28,32 @@ class UfoStandard {
             this.minY = y - 50;
             this.sfx = sfx;
 
-            this.state = UFO_STATE_ALIVE;
-
-            //  Play ufo sound loop.
-            this.sfx.playSound("ufoStandardFlyBy", true);
+            this.state = COLLIDABLE_STATE_ALIVE;
         };
 
         this.update = function () {
+            //  If the Ufo is off the right edge, mark it dead
+            if (Collidable.offRightEdge(this))
+                this.state = COLLIDABLE_STATE_DEAD;
+            else if (Collidable.onScreen(this) && !this.soundPlaying) {
+                //  Play ufo sound loop.
+                this.sfx.playSound("ufoStandardFlyBy", true);
+                this.soundPlaying = true;
+            }
+
             //  move the Ufo - needs to be a predictable pattern, so it doesn't clash with others
             this.rotation++;
-            if (this.state == UFO_STATE_ALIVE) {
+            if (this.state == COLLIDABLE_STATE_ALIVE) {
                 if (this.position.y > this.maxY)
                     this.direction = -1;
                 else if (this.position.y < this.minY)
                     this.direction = 1;
 
                 this.position.add(createVector(this.forwardSpeed, this.climbSpeed * this.direction));
-
-                if (!this.sfx.isSoundPlaying("ufoStandardFlyBy")) {
-                    console.log('ufo sound stopped');
-                    this.sfx.playSound("ufoStandardFlyBy");
-                }
-            } else if (this.state == UFO_STATE_DYING) {
+            } else if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.update();
                 if (!this.explosion.alive())
-                    this.state = UFO_STATE_DEAD;
+                    this.state = COLLIDABLE_STATE_DEAD;
             }
             else {
                 //  Ufo is dead.
@@ -60,10 +66,10 @@ class UfoStandard {
             translate(this.position.x, this.position.y);
             rotate(-this.rotation * ((PI * 2) / 90), createVector(0, 0, 1));
             //  position offsets
-            var yOffset = sqrt(pow(this.sideLen, 2) + pow(this.sideLen / 2, 2)) / 2;
-            var xOffset = this.sideLen / 2;
+            var yOffset = sqrt(pow(UFO_STD_SIDELEN, 2) + pow(UFO_STD_SIDELEN / 2, 2)) / 2;
+            var xOffset = UFO_STD_SIDELEN;
 
-            if (this.state == UFO_STATE_ALIVE) {
+            if (this.state == COLLIDABLE_STATE_ALIVE) {
                 //  connecting struts
                 beginShape();
 
@@ -78,42 +84,31 @@ class UfoStandard {
                 endShape();
             }
 
-            if (this.state != UFO_STATE_DEAD) {
+            if (this.state != COLLIDABLE_STATE_DEAD) {
                 //  spheres
                 fill(192, 192, 192);
                 strokeWeight(1);
-                ellipse(0, -yOffset, this.sphereDiameter);
-                ellipse(-xOffset, yOffset, this.sphereDiameter);
-                ellipse(xOffset, yOffset, this.sphereDiameter);
+                ellipse(0, -yOffset, UFO_STD_DIAMETER);
+                ellipse(-xOffset, yOffset, UFO_STD_DIAMETER);
+                ellipse(xOffset, yOffset, UFO_STD_DIAMETER);
             }
             pop();
 
-            if (this.state == UFO_STATE_DYING) {
+            if (this.state == COLLIDABLE_STATE_DYING) {
                 this.explosion.draw();
             }
-            else if (this.state == UFO_STATE_DEAD) {
+            else if (this.state == COLLIDABLE_STATE_DEAD) {
             }
-        };
-
-        this.collision = function (vector) {
-            if (this.state == UFO_STATE_ALIVE) {
-                return this.position.dist(vector) < this.sideLen / 2;
-            }
-            else return false;
         };
 
         this.destroy = function () {
-            if (this.state == UFO_STATE_ALIVE) {
+            if (this.state == COLLIDABLE_STATE_ALIVE) {
                 this.explosion = new Explosion();
                 this.explosion.initialize(this.position.x, this.position.y, 250, 400);
                 this.sfx.stopSound("ufoStandardFlyBy");
                 this.sfx.playSound("smallExplosion");
-                this.state = UFO_STATE_DYING;
+                this.state = COLLIDABLE_STATE_DYING;
             }
         };
-
-        this.alive = function () {
-            return this.state != UFO_STATE_DEAD;
-        }
     }
 }

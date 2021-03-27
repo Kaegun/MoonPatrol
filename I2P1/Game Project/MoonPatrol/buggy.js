@@ -44,6 +44,7 @@ class Buggy {
         this.multishot = false;  //  single or multishot turret
         this.multishotActivated = false;
         this.jumpJets = false;
+        this.jumpJetsActivated = false;
         this.multishotTimer = 0;
         this.missileCount = 0;
         this.shieldTimer = 0;
@@ -279,11 +280,9 @@ class Buggy {
                         if (this.jumpJets) {
                             jumpHeight *= 2;
                             jumpSpeed *= this.falling ? 1 : 1.5;
-                            if (--this.jumpJetsTimer <= 0) {
-                                this.jumpJets = false;
-                                this.jumpJetsTimer = 0;
-                            }
+                            this.jumpJetsActivated = true;
                         }
+
                         if (this.position.y <= this.floorPosY - jumpHeight)
                             this.falling = true;
                         if (this.falling) {
@@ -302,7 +301,12 @@ class Buggy {
                         else {
                             this.velocity.y = -jumpSpeed;
                         }
-                        console.log(`${this.falling} - ${this.position.y} : ${this.velocity.y} : ${this.floorPosY + jumpHeight}`);
+                    }
+
+                    if (this.jumpJetsActivated && --this.jumpJetsTimer <= 0) {
+                        this.jumpJets = false;
+                        this.jumpJetsActivated = false;
+                        this.jumpJetsTimer = 0;
                     }
 
                     this.position.add(this.velocity);
@@ -361,7 +365,7 @@ class Buggy {
         this.fireTurrets = function () {
             //  Add bullet to up and forward turret (to maximum)
             var fired = false;
-            var maxBullets = this.multishot ? BUGGY_MAX_BULLETS * 3 : BUGGY_MAX_BULLETS;
+            var maxBullets = this.multishot ? BUGGY_MAX_BULLETS * 2 : BUGGY_MAX_BULLETS;
             if (this.bulletsUp.length < maxBullets) {
                 this.bulletsUp.push({
                     position: createVector(this.position.x - 80, this.position.y - 50),
