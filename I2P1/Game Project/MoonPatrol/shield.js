@@ -8,7 +8,6 @@ class Shield {
         this.growth = 0;
         this.shrinkLifetime = 0;
         this.shrinkage = 0;
-        this.health = 0;
 
         this.initialize = function (x, y, diameter, lifetime) {
             this.position = createVector(x, y);
@@ -17,7 +16,6 @@ class Shield {
             //  create a grow and shrink effect for the shield
             this.growLifetime = floor(lifetime / 10);
             this.shrinkLifetime = floor(lifetime / 10);
-            this.health = max(ceil(lifetime / 20), 1);
         };
 
         this.update = function (moveVector) {
@@ -59,11 +57,12 @@ class Shield {
         };
 
         this.alive = function () {
-            return this.health > 0 && this.lifetime > 0;
+            return this.lifetime > 0;
         };
 
+        //  Reduce the shield's lifetime when hit
         this.applyDamage = function (damage) {
-            this.health = max(0, this.health - damage);
+            this.lifetime = max(0, this.lifetime - damage * 10);
         }
 
         this.getRadius = function () {

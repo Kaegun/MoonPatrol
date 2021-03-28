@@ -505,6 +505,9 @@ class Buggy {
                 this.sfx.playSound("playerExplosion");
                 //  stop plummeting if we got here by falling
                 this.plummeting = false;
+                if (this.jumping) {
+                    this.falling = true;
+                }
             }
         };
 

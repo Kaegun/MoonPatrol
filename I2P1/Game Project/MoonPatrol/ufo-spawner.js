@@ -5,7 +5,7 @@ const UFO_BOSS = 3;
 
 class UfoSpawner {
 
-    static spawnUfos(sfx, levelWidth, type, numUfos, numWaves, floorPosY) {
+    static spawnUfos(sfx, levelWidth, type, numUfos, numWaves, speedFactor, floorPosY) {
 
         //  TODO: Need some defaults by UFO TYPE
         var ufos = [];
@@ -22,7 +22,7 @@ class UfoSpawner {
                     startY -= 40;
                 }
                 startX -= 150;
-                ufo.initialize(startX, startY, sfx, 1, floorPosY);
+                ufo.initialize(startX, startY, sfx, speedFactor, floorPosY);
                 ufos.push(ufo);
             }
         }

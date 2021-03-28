@@ -12,9 +12,11 @@ const levelDesigns = [
         rocks: 20,
         mountains: { qty: 5, type: MOUNTAIN_TYPE_SNOW, },
         craters: 12,
-        enemies: [
-            { type: UFO_STANDARD, count: 3, waves: 10, },
-            { type: UFO_SCOUT, count: 1, waves: 5, }
+        enemies: [  //  Add property to better space out spawns / calculate spawns better
+            { type: UFO_STANDARD, count: 3, waves: 10, speedFactor: 1, },
+            { type: UFO_SCOUT, count: 1, waves: 5, speedFactor: 1, },
+            { type: UFO_BOMBER, count: 1, waves: 1, speedFactor: 1, },
+            { type: UFO_BOSS, count: 1, waves: 1, speedFactor: 1, },
         ],
     },
 ];
@@ -126,7 +128,7 @@ class Level {
 
             for (var i = 0; i < levelDesigns[idx].enemies.length; i++) {
                 var ufo = levelDesigns[idx].enemies[i];
-                var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves, this.floorPosY);
+                var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves, ufo.speedFactor, this.floorPosY);
                 this.enemies.push(...ufos);
             }
 

@@ -274,7 +274,6 @@ function drawGameOver() {
     startY += 116;
     strokeWeight(2);
     drawTextCentered("Press 'Enter' or 'ESC' to restart the Game", startY, 36);
-
 }
 
 function drawWon() { }
@@ -330,7 +329,7 @@ function checkEnemyCollision(enemy, projectiles) {
     }
 
     //  bullets in screen coordinates?
-    if (enemy.collision && enemy.collision(buggy.position,buggy.getCollisionRadius())) {
+    if (enemy.collision && enemy.collision(buggy.position, buggy.getCollisionRadius())) {
         //  check for shields and reduce shield health if active
         if (buggy.shieldActive())
             buggy.applyShieldDamage(enemy.getDamage());
@@ -508,7 +507,6 @@ function keyPressedDead() {
             restartLevel();
             break;
         default:
-            console.log(`key up not handled: [${key}]: [${keyCode}]`);
             break;
     }
 }
@@ -521,7 +519,6 @@ function keyPressedGameOver() {
             restartGame();
             break;
         default:
-            console.log(`key up not handled: [${key}]: [${keyCode}]`);
             break;
     }
 }
@@ -534,7 +531,6 @@ function keyPressedWon() {
             startLevel();
             break;
         default:
-            console.log(`key up not handled: [${key}]: [${keyCode}]`);
             break;
     }
 }
@@ -548,12 +544,6 @@ function keyReleased() {
             buggy.accelerate(false);
             break;
         default:
-            console.log(`key up not handled: [${key}]: [${keyCode}]`);
             break;
     }
-}
-
-function clearArray(array) {
-    if (array && array.length && array.length > 0)
-        array.splice(0, array.length);
 }
