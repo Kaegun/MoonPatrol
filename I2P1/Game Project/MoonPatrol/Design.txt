@@ -76,3 +76,29 @@ xx handle plummeting
 xx - fix collision when jumping
 xx - add You DEAD screen
 xx handle buggy death properly 
+
+Moon Patrol - Polish time
+
+Issues
+ - bomber
+   - drawn xx
+   - movement 
+ - boss
+   - drawn xx
+   - movemet
+ - level transitions
+ - end of level actions
+ - base not drawing on restart?
+ - handle game paused
+ - if hit while jumping, never stops flying. need to come down
+
+Readme
+ - Write Up
+
+Nice to have
+ - missiles
+ - volcanoes
+ - Jumpjet particles
+ - better rocks
+ - fix jumping over big canyons
+   - time it right nub!
