@@ -11,12 +11,12 @@ const PICKUP_MAX = PICKUP_JUMPJETS;
 const PICKUP_FALL_SPEED = 5;
 
 const pickupParameters = [
-    { type: PICKUP_LIFE, dropChance: 10, collisionRadius: 80, yOffset: -35, },
-    { type: PICKUP_MISSILES, dropChance: 10, collisionRadius: 80, yOffset: -35, },
-    { type: PICKUP_SHIELD, dropChance: 20, collisionRadius: 80, yOffset: -35, },
-    { type: PICKUP_MULTISHOT, dropChance: 50, collisionRadius: 80, yOffset: -35, },
-    { type: PICKUP_GEM, dropChance: 5, collisionRadius: 80, yOffset: 0, },
-    { type: PICKUP_JUMPJETS, dropChance: 10, collisionRadius: 80, yOffset: -35, },
+    { type: PICKUP_LIFE, dropChance: 10, collisionRadius: 80, yOffset: -35, value: 1, },
+    { type: PICKUP_MISSILES, dropChance: 10, collisionRadius: 80, yOffset: -35, value: 10, },
+    { type: PICKUP_SHIELD, dropChance: 20, collisionRadius: 80, yOffset: -35, value: 90, },
+    { type: PICKUP_MULTISHOT, dropChance: 50, collisionRadius: 80, yOffset: -35, value: 150, },
+    { type: PICKUP_GEM, dropChance: 5, collisionRadius: 80, yOffset: 0, value: 1000, },
+    { type: PICKUP_JUMPJETS, dropChance: 10, collisionRadius: 80, yOffset: -35, value: 120, },
 ];
 
 class Pickup {
@@ -116,23 +116,7 @@ class Pickup {
         };
 
         this.getValue = function () {
-            switch (this.pickupType) {
-                case PICKUP_GEM:
-                    return 1000;
-                case PICKUP_LIFE:
-                    return 1;
-                case PICKUP_MISSILES:
-                    return 10;
-                case PICKUP_MULTISHOT:
-                    return 250;
-                case PICKUP_SHIELD:
-                    return 200;
-                case PICKUP_JUMPJETS:
-                    return 250;
-                default:
-                    console.log(`Invalid pickup type: {${this.pickupType}}`);
-                    return 0;
-            }
+            return pickupParameters[this.pickupType].value;
         }
 
         this.drawGem = function () {

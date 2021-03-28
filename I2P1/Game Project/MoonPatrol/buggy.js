@@ -5,7 +5,8 @@ const BUGGY_STATE_DEAD = 2;
 
 const BUGGY_CENTER_HEIGHT = 60;
 
-const BUGGY_DEATH_LOOP = 100;
+const BUGGY_DEATH_LOOP = 45;
+const BUGGY_WHEEL_DESTROY_SPEED = 8;
 
 const BUGGY_MAX_BULLETS = 10;
 const BUGGY_MAX_SPEED = 8;
@@ -16,6 +17,8 @@ const BUGGY_JUMPJET_FACTOR = 1.5;
 const BUGGY_PLUMMET_SPEED = 10;
 
 const BUGGY_COLLISION_BOUND = 60;
+
+const BUGGY_STARTING_LIVES = 3;
 
 class Buggy {
     constructor() {
@@ -60,7 +63,7 @@ class Buggy {
         this.jumping = false;
         this.falling = false;
         this.plummeting = false;
-        this.lives = 3;
+        this.lives = BUGGY_STARTING_LIVES;
 
         this.initialize = function (startX, floorPosY, sfx) {
 
@@ -101,6 +104,7 @@ class Buggy {
             };
         };
 
+        //  Resets the states, but does not reset lives
         this.reset = function (startX, floorPosY) {
             //  clear array objects
             clearArray(this.wheels);
@@ -129,8 +133,14 @@ class Buggy {
             this.jumping = false;
             this.falling = false;
             this.plummeting = false;
+            this.deathCounter = 0;
 
             this.initialize(startX, floorPosY, this.sfx);
+        };
+
+        this.revive = function (startX, floorPosY) {
+            this.reset(startX, floorPosY);
+            this.lives = BUGGY_STARTING_LIVES;
         };
 
         this.draw = function () {
@@ -322,11 +332,14 @@ class Buggy {
                             jumpHeight *= 2;
                             jumpSpeed *= this.falling ? 1 : BUGGY_JUMPJET_FACTOR;
                             this.jumpJetsActivated = true;
-                            for (var i = 0; i < this.jumpJets.length; i++) {
+                            for (var i = this.jumpJetParticles.length - 1; i >= 0; i--) {
                                 var jumpSpeedY = BUGGY_JUMP_SPEED * BUGGY_JUMP_SPEED;
                                 var jumpSpeedX = this.velocity.x;
-                                //  TODO: Update emitter to attach to a moving object
-                                this.jumpJetParticles[i].update(createVector(jumpSpeedX, jumpSpeedY));
+                                //  Play jumpjets if they were used
+                                if (!this.jumpJetParticles[i].alive())
+                                    this.jumpJetParticles[i].update(createVector(jumpSpeedX, jumpSpeedY));
+                                else
+                                    this.jumpJetParticles.splice(i, 1);
                             }
                         }
 
@@ -361,16 +374,20 @@ class Buggy {
                     //  Falling into a crater
                     if (this.plummeting) {
                         this.velocity.y = BUGGY_PLUMMET_SPEED;
-                        if (this.position.y > this.floorPosY + 90)
-                            this.state = BUGGY_STATE_DEAD;
+                        if (this.position.y > this.floorPosY + 90) {
+                            //  now destroy the buggy
+                            this.destroy();
+                        }
                     }
                     //  blow up the buggy if destroyed by being hit
                     else if (this.explosion.alive()) {
-                        var wheelDeltaY = ++this.deathCounter > BUGGY_DEATH_LOOP / 2 ? 10 : -10;
-                        this.wheels[0].x -= 10;
+                        var wheelDeltaY = ++this.deathCounter > BUGGY_DEATH_LOOP / 2
+                            ? BUGGY_WHEEL_DESTROY_SPEED
+                            : -BUGGY_WHEEL_DESTROY_SPEED;
+                        this.wheels[0].x -= BUGGY_WHEEL_DESTROY_SPEED;
                         this.wheels[0].y += wheelDeltaY;
                         this.wheels[1].y += wheelDeltaY;
-                        this.wheels[2].x += 10;
+                        this.wheels[2].x += BUGGY_WHEEL_DESTROY_SPEED;
                         this.wheels[2].y += wheelDeltaY;
 
                         this.explosion.update();
@@ -393,7 +410,6 @@ class Buggy {
                 case BUGGY_STATE_DEAD:
                     this.deathCounter = 0;
                     this.velocity.x = this.velocity.y = 0;
-                    //  Reset explosion, etc.
                     break;
             }
 
@@ -425,10 +441,6 @@ class Buggy {
         };
 
         this.fireTurrets = function () {
-            //  Can't shoot when you're dead
-            if (this.state != BUGGY_STATE_ALIVE)
-                return;
-
             //  Add bullet to up and forward turret (to maximum)
             var fired = false;
             var maxBullets = this.multishot ? BUGGY_MAX_BULLETS * 2 : BUGGY_MAX_BULLETS;
@@ -472,23 +484,39 @@ class Buggy {
             }
         };
 
+        this.shieldActive = function () {
+            return (this.shield && this.shield.alive());
+        };
+
+        this.applyShieldDamage = function (damage) {
+            if (this.shield)
+                this.shield.applyDamage(damage);
+        };
+
         this.destroy = function () {
-            this.state = BUGGY_STATE_DYING;
-            this.lives = max(0, this.lives - 1);
+            //  Don't kill the player twice 
+            if (this.plummeting || this.state == BUGGY_STATE_ALIVE) {
+                this.state = BUGGY_STATE_DYING;
+                this.lives = max(0, this.lives - 1);
 
-            this.explosion = new Explosion();
-            this.explosion.initialize(this.position.x, this.position.y);
+                this.explosion = new Explosion();
+                this.explosion.initialize(this.position.x, this.position.y, 500, 240);
 
-            this.sfx.playSound("playerExplosion");
+                this.sfx.playSound("playerExplosion");
+                //  stop plummeting if we got here by falling
+                this.plummeting = false;
+            }
         };
 
         this.setPlummeting = function (plummet) {
-            if (!this.plummeting && plummet) {
-                this.plummeting = true;
-                this.state = BUGGY_STATE_DYING;
-                this.lives = max(0, this.lives - 1);
-                //  Play a falling sound
-                this.sfx.playSound("gameOver");
+            //  Don't kill the player twice
+            if (this.state == BUGGY_STATE_ALIVE) {
+                if (!this.plummeting && plummet) {
+                    this.plummeting = true;
+                    this.state = BUGGY_STATE_DYING;
+                    //  Play a falling sound
+                    this.sfx.playSound("gameOver");
+                }
             }
         }
 
@@ -520,6 +548,15 @@ class Buggy {
 
         this.alive = function () {
             return this.state != BUGGY_STATE_DEAD;
+        };
+
+        //  Prevent keyboard input when dying
+        this.canAcceptInput = function () {
+            return this.state == BUGGY_STATE_ALIVE;
+        }
+
+        this.getCollisionRadius = function () {
+            return this.shieldActive() ? max(this.shield.getRadius(), BUGGY_COLLISION_BOUND) : BUGGY_COLLISION_BOUND;
         };
 
         //  Need to display health too

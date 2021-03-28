@@ -61,5 +61,13 @@ class Shield {
         this.alive = function () {
             return this.health > 0 && this.lifetime > 0;
         };
+
+        this.applyDamage = function (damage) {
+            this.health = max(0, this.health - damage);
+        }
+
+        this.getRadius = function () {
+            return this.diameter / 2;
+        };
     }
 }

@@ -97,8 +97,33 @@ function restartLevel() {
     //  Restart the level
     levels[activeLevel].restart();
 
+    //  stop playing music
+    stopGameMusic();
+
     //  set state to playing
     gameState = GAME_STATE_PLAYING;
+}
+
+function restartGame() {
+    activeLevel = 0;
+    score = 0;
+    clearArray(pickups);
+    clearArray(levels);
+    numLevels = Level.createLevels(levels, sfx, pickups);
+    buggy.revive(levels[activeLevel].startX, levels[activeLevel].floorPosY);
+    stopGameMusic();
+    gameState = GAME_STATE_MENU;
+}
+
+function stopGameMusic() {
+    //  stop playing death music
+    defeatMusicPlayed = false;
+    if (sfx.isSoundPlaying(SFX_PLAYER_DEAD_BG)) {
+        sfx.stopSound(SFX_PLAYER_DEAD_BG);
+    }
+    if (sfx.isSoundPlaying(SFX_MENU_BG)) {
+        sfx.stopSound(SFX_MENU_BG);
+    }
 }
 
 function draw() {
@@ -258,7 +283,8 @@ function drawPaused() { }
 
 function checkCollisions() {
     for (var i = 0; i < levels[activeLevel].enemies.length; i++) {
-        checkEnemyCollision(levels[activeLevel].enemies[i], buggy.bulletsUp);
+        if (checkEnemyCollision(levels[activeLevel].enemies[i], buggy.bulletsUp))
+            return;
     }
 
     for (var i = pickups.length - 1; i >= 0; i--) {
@@ -300,15 +326,21 @@ function checkEnemyCollision(enemy, projectiles) {
                     pickups.push(pu);
                 }
             }
-            return;
         }
     }
 
     //  bullets in screen coordinates?
-    if (enemy.collision && enemy.collision(buggy.position)) {
-        buggy.destroy();
-        return;
+    if (enemy.collision && enemy.collision(buggy.position,buggy.getCollisionRadius())) {
+        //  check for shields and reduce shield health if active
+        if (buggy.shieldActive())
+            buggy.applyShieldDamage(enemy.getDamage());
+        else {
+            buggy.destroy();
+            return true;    //  stop checking collisions if buggy dead
+        }
     }
+
+    return false;
 }
 
 function update() {
@@ -421,6 +453,9 @@ function keyPressedMenu() {
 
 function keyPressedPlaying() {
 
+    if (!buggy.canAcceptInput())
+        return;
+
     switch (keyCode) {
         case KEY_ENTER:
             //  continue / start / next level, etc.
@@ -459,9 +494,6 @@ function keyPressedPlaying() {
             sfx.toggleSound();
             levels[activeLevel].toggleMusic();
             break;
-        case 88:    //  TODO: Temporary for testing
-            buggy.destroy();
-            break;
         default:
             console.log(`key press not handled: [${key}]: [${keyCode}]`);
             break;
@@ -486,7 +518,7 @@ function keyPressedGameOver() {
         case KEY_ESC:
         case KEY_ENTER:
             //  Restart the level
-            startLevel();
+            restartGame();
             break;
         default:
             console.log(`key up not handled: [${key}]: [${keyCode}]`);

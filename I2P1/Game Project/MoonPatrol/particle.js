@@ -59,16 +59,31 @@ class ParticleEmitter {
             this.lifetime = lifetime;
             this.direction = direction;
             this.noloop = !loop ? false : (loop == PS_NOLOOP);
+
+            //  Create the initial particles
+            this.createParticles();
         };
 
-        this.update = function () {
+        this.update = function (moveVector) {
             this.killParticles();
 
-            for (var i = 0; i < this.particles.length; i++) {
-                this.particles[i].update();
+            if (moveVector) {
+                push();
+                translate(moveVector);
+                this.updateParticles();
+                pop();
+            }
+            else {
+                this.updateParticles();
             }
 
             this.createParticles();
+        };
+
+        this.updateParticles = function () {
+            for (var i = 0; i < this.particles.length; i++) {
+                this.particles[i].update();
+            }
         };
 
         this.draw = function () {

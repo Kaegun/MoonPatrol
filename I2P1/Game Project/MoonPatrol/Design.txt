@@ -1,11 +1,6 @@
 moonbuggy game
-xx - draw the buggy
-xx - make wheels bounce
-
-handle plummeting
- - fix collision when jumping
- - add You DEAD screen
-handle buggy death properly 
+ - draw the buggy
+ - make wheels bounce
 
 aliens 
  - drop bombs
@@ -35,45 +30,49 @@ scrolling speed always at a minimum
 buggy can move forward and back at a speed, even though scrolling is always forward
 
 
-fix waves
+xx fix waves
 xx draw pickups
 draw other ufos
- - std
- - scout
+xx - std
+xx - scout
  - boss
  - bomber
-draw craters
+xx draw craters
 handle crater bombs
 ufos can shoot
- - scout doesn't shoot
+xx - scout doesn't shoot
+xx - standard ufo
  - bomber
  - boss
 hud stuffs for buggy stuffs
- - missiles
- - jumpJets
+xx - missiles
+xx - jumpJets
    - need particle system
- - multishot xx
- - shield
+xx - multishot
+xx - shield
    - handle damage
-   - clean up the art
-handle death
+xx   - clean up the art
+xx handle death
 handle level transitions
 collision 
- - bullets to buggy
+xx - bullets to buggy
 
 level transitions
-main menu
- - press to start
+xx main menu
+xx - press to start
 
-Need to wait for level start before calling init on level. 
- - else music is playing as well as ufos.
+xx Need to wait for level start before calling init on level. 
+xx - else music is playing as well as ufos.
 
-Handle plummeting
-
-Fix performance / stack crash bug
+xx Fix performance / stack crash bug
+ - playing too many sounds causes pain
 
 pickups
- - make collidable
- - add drop maker
- - add to levels
+xx - make collidable
+xx - add drop maker
+xx - add to levels
 
+xx handle plummeting
+xx - fix collision when jumping
+xx - add You DEAD screen
+xx handle buggy death properly 

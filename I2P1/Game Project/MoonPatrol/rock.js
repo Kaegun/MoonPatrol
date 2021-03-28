@@ -6,13 +6,14 @@ class Rock {
 
         this.initialize = function (x, floorPosY) {
             this.position = createVector(x, floorPosY);
-            this.color = color(205, 92, 92);
+            this.color = color(205, 133, 63);
             this.accentColor = color(85, 107, 47);
         };
 
         this.draw = function () {
             fill(this.color);
             stroke(this.accentColor);
+            strokeWeight(2);
             ellipse(this.position.x, this.position.y - 15, 100, 40);
             ellipse(this.position.x - 20, this.position.y - 35, 60, 30);
             ellipse(this.position.x + 30, this.position.y - 30, 50, 26);

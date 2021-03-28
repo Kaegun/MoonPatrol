@@ -3,6 +3,7 @@ const UFO_STD_DIAMETER = 30;
 const UFO_STD_FWD_SPEED = 6;
 const UFO_STD_CLIMB_SPEED = 3;
 const UFO_STD_FIRE_RATE = 60;
+const UFO_STD_DAMAGE = 1;
 
 const UFO_STD_SFX_FLYBY = "ufoStandardFlyBy";
 const UFO_STD_SFX_BULLET_IMPACT = "smallImpact";
@@ -166,13 +167,17 @@ class UfoStandard {
             }
         };
 
-        this.collision = function (collider) {
+        this.collision = function (collider, collisionRadius) {
             for (var i = this.bullets.length - 1; i >= 0; i--) {
-                if (this.bullets[i].position.dist(collider) < BUGGY_COLLISION_BOUND) {
+                if (this.bullets[i].position.dist(collider) < collisionRadius) {
                     this.bullets.splice(i, 1);
                     return true;
                 }
             }
+        };
+
+        this.getDamage = function () {
+            return UFO_STD_DAMAGE;
         };
     }
 }

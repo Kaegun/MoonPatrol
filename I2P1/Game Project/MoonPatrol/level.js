@@ -153,6 +153,9 @@ class Level {
             //  Clear state flags
             this.scrollPos = 0;
 
+            //  stop all music
+            this.stopAllSound();
+
             //  init
             this.initialize(this.levelNumber - 1, this.sfx, this.pickups);
 
