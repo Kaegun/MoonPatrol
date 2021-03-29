@@ -1,5 +1,5 @@
 # Introduction
-After the mid-term, I decided to change my project up and implement a Moon Patrol clone. I replaced the character with the Moon Patrol ATB, trees became rock formations, clouds became moons and planets, and I hoped to add some flair to the mountains. The pick-ups are dropped by shooting the enemies.
+After the mid-term, I wanted to do something a bit more interesting than the basic *Pitfall* like game we started on. The lecture on sound triggered an old memory, and I decided to change my project up and implement a Moon Patrol clone. I replaced the character with the Moon Patrol ATB, trees became rock formations, clouds became moons and planets, and I hoped to add some flair to the mountains by adding a particle emitter and making it look like a volcano. The pick-ups are dropped by shooting the enemies and randomly spawned in the levels, based on the levelDesign specification.
 
 # Code Design
 I implemented almost everything as ECMA2015 classes. Wherever possible, I extracted common functionality into static methods or helper classes.
@@ -35,10 +35,10 @@ There are 4 types of enemies:
         ESC:        - Cancel
         F1:         - Show Help Menu
 
-The background scrolls at a minimum speed, and will speed up or slow down with the player. The wheels on the ATB bounce with the terrain (really it's just a random movement, loosely synced to the speed of the ATB). 
- The player also has a shield, and the shield counter is decreased when the shield is hit, by a damage factor
+The background scrolls at a minimum speed, and will speed up or slow down with the player. The wheels on the ATB bounce with the terrain (really it's just a random movement, loosely synced to the speed of the ATB). I added a shield mechanic, the shield counter is decreased when the shield is hit, by a damage factor for each different UFO / Bomb type.
 
  # Citations
+  - The Original Moon Patrol
   - Fonts
     - https://www.fontspace.com/category/sci-fi
       - Moonhouse (100% Free)
