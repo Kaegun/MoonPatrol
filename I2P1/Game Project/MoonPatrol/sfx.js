@@ -20,7 +20,7 @@ const SFX = [
     { key: "ufoBomberFlyBy", file: "/assets/sfx/ufoBomberFlyBy.wav", },
     { key: "ufoBossFlyBy", file: "/assets/sfx/ufoMothershipFlyBy.wav", },
     { key: "ufoScoutWarning", file: "/assets/sfx/ufoScoutWarningAlarm.wav", },
-    { key: "ufoBossWarning", file: "/assets/sfx/ufoMothershipWarningAlarm.wav", },
+    { key: "ufoBossWarning", file: "/assets/sfx/ufoMotherShipWarningAlarm.wav", },
     { key: "gameOver", file: "/assets/sfx/GameOver01.wav", },
 
     { key: "pickupCollected", file: "/assets/sfx/PickupCollected.wav", },
