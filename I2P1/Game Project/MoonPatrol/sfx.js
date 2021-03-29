@@ -29,6 +29,7 @@ const SFX = [
     //  Music Files
     { key: "menubgmusic", file: "/assets/music/Menu.mp3", },
     { key: "defeatmusic", file: "/assets/music/Defeat.mp3", },
+    { key: "gameovermusic", file: "/assets/music/GameOverLoop.wav", },
     { key: "victorymusic", file: "/assets/music/Triumph.mp3", },
     { key: "level1bgmusic", file: "/assets/music/Loop1.wav", },
     { key: "level2bgmusic", file: "/assets/music/Loop2.wav", },

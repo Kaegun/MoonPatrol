@@ -12,7 +12,7 @@ const PICKUP_FALL_SPEED = 5;
 
 const pickupParameters = [
     { type: PICKUP_LIFE, dropChance: 10, collisionRadius: 80, yOffset: -35, value: 1, },
-    { type: PICKUP_MISSILES, dropChance: 10, collisionRadius: 80, yOffset: -35, value: 10, },
+    { type: PICKUP_MISSILES, dropChance: 1, collisionRadius: 80, yOffset: -35, value: 10, },
     { type: PICKUP_SHIELD, dropChance: 20, collisionRadius: 80, yOffset: -35, value: 90, },
     { type: PICKUP_MULTISHOT, dropChance: 50, collisionRadius: 80, yOffset: -35, value: 150, },
     { type: PICKUP_GEM, dropChance: 5, collisionRadius: 80, yOffset: 0, value: 1000, },
@@ -207,6 +207,7 @@ class Pickup {
         this.drawShield = function () {
             var diameter = 50;
             stroke(255, 255, 0);
+            strokeWeight(1);
             fill(192, 192, 192, 60);
             ellipse(this.position.x, this.position.y, diameter);
 

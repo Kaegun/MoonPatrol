@@ -229,7 +229,7 @@ class Buggy {
 
             //  TODO: draw the missiles
 
-            //  TODO: draw the jumpJet particles
+            //  draw the jumpJet particles
             for (var i = 0; i < this.jumpJetParticles.length; i++) {
                 this.jumpJetParticles[i].draw();
             }
@@ -402,6 +402,16 @@ class Buggy {
                         this.cockpitColor = lerpColor(color(0, 255, 255, 150),
                             color(0, 0, 0),
                             lerpIdx);
+
+                        //  stop moving forward, but finish falling
+                        if (this.position.y >= this.floorPosY) {
+                            this.velocity.y = 0;
+                            this.position.y = this.floorPosY;
+                        }
+                        else {
+                            this.velocity.y = BUGGY_JUMP_SPEED;
+                        }
+                        this.speed = this.velocity.x = 0;
                     }
                     else {
                         this.state = BUGGY_STATE_DEAD;
@@ -537,13 +547,17 @@ class Buggy {
                     break;
                 case PICKUP_MULTISHOT:
                     this.multishot = true;
+                    this.multishotActivated = false;
                     this.multishotTimer += pickup.getValue();
                     break;
                 case PICKUP_SHIELD:
                     this.shieldTimer += pickup.getValue();
+                    if (this.shield)
+                        this.shield.lifetime += pickup.getValue();
                     break;
                 case PICKUP_JUMPJETS:
                     this.jumpJets = true;
+                    this.jumpJetsActivated = false;
                     this.jumpJetsTimer += pickup.getValue();
                     break;
             }

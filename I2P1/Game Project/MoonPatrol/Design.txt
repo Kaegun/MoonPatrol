@@ -82,15 +82,17 @@ Moon Patrol - Polish time
 Issues
  - bomber
    - drawn xx
-   - movement 
+   - movement xx
+   - shooting xx
  - boss
    - drawn xx
-   - movemet
- - level transitions
- - end of level actions
- - base not drawing on restart?
- - handle game paused
- - if hit while jumping, never stops flying. need to come down
+   - movement xx
+   - shooting xx
+ - level transitions xx
+ - end of level actionsxx
+ - base not drawing on restart? xx
+ - handle game paused xx
+ - if hit while jumping, never stops flying. need to come down xx
 
 Readme
  - Write Up
@@ -102,3 +104,5 @@ Nice to have
  - better rocks
  - fix jumping over big canyons
    - time it right nub!
+
+Fix the UFO Spawning xx

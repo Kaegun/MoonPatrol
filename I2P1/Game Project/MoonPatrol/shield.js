@@ -29,7 +29,6 @@ class Shield {
                 this.diameter = this.maxDiameter * (1 - (++this.shrinkage / this.shrinkLifetime));
             }
 
-            console.log(`${this.diameter} | ${this.maxDiameter} | ${this.growth} | ${this.growLifetime} | ${this.shrinkage} | ${this.shrinkLifetime}`);
             //  move the shield by the moveVector (e.g. it's on a vehicle)
             this.position.add(moveVector);
         };

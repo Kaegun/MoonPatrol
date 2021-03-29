@@ -25,4 +25,36 @@ class Collidable {
     static offRightEdge(collidable) {
         return collidable.position.x > width + collidable.visibleRadius;
     }
+
+    static doRightEdgeChecks(collidable, soundFile) {
+        if (Collidable.offRightEdge(collidable)) {
+            this.stopCollidableSound(collidable, soundFile);
+        }
+        else {
+            this.playSoundOnScreen(collidable, soundFile);
+        }
+    }
+
+    static doLeftEdgeChecks(collidable, soundFile) {
+        if (Collidable.offLeftEdge(collidable)) {
+            this.stopCollidableSound(collidable, soundFile);
+        }
+        else {
+            this.playSoundOnScreen(collidable, soundFile);
+        }
+    }
+
+    static stopCollidableSound(collidable, soundFile) {
+        collidable.state = COLLIDABLE_STATE_DEAD;
+        collidable.sfx.stopSound(soundFile);
+        collidable.soundPlaying = false;
+    }
+
+    static playSoundOnScreen(collidable, soundFile) {
+        if (Collidable.onScreen(collidable) && !collidable.soundPlaying) {
+            //  Play ufo sound loop.
+            collidable.sfx.playSound(soundFile, true);
+            collidable.soundPlaying = true;
+        }
+    }
 }

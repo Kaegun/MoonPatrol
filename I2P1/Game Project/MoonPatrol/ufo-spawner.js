@@ -7,21 +7,19 @@ class UfoSpawner {
 
     static spawnUfos(sfx, levelWidth, type, numUfos, numWaves, speedFactor, floorPosY) {
 
-        //  TODO: Need some defaults by UFO TYPE
         var ufos = [];
         for (var j = 0; j < numWaves; j++) {
-            var startX = -j * (levelWidth / (numWaves + 1)) - 100 * (type + 1), startY = 150;
-            console.log(`Ufo Start Positions: x:${startX}, y:${startY}`);
+            var startX = -j * (levelWidth / (numWaves + 1)), startY = (height - floorPosY) / 2;
             for (var i = 0; i < numUfos; i++) {
                 var ufo = UfoSpawner.createUfo(type);
                 if (!ufo)
                     return ufos;    //  return empty array if ufo could not be created
                 if (i % 2 == 0) {
-                    startY += 60;
+                    startY += random(20, ufo.speed * 10);
                 } else {
-                    startY -= 40;
+                    startY -= random(10, ufo.speed * 6);
                 }
-                startX -= 150;
+                startX -= (random(50, 100) * (type + 1)) * ufo.speed;
                 ufo.initialize(startX, startY, sfx, speedFactor, floorPosY);
                 ufos.push(ufo);
             }

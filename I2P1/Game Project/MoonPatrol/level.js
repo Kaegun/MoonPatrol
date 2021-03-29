@@ -1,25 +1,4 @@
-const levelDesigns = [
-    {
-        floorHeight: 0.3,
-        startX: 250,
-        width: 10,
-        bgColor: { r: 105, g: 105, b: 105 },
-        skyColor: { r: 25, g: 25, b: 112 },
-        planets: [
-            { x: 400, y: 200, color: { r: 238, g: 130, b: 238 }, accentColor: { r: 186, g: 85, b: 211 }, diameter: 280 },
-            { x: 900, y: 250, color: { r: 175, g: 238, b: 238 }, accentColor: { r: 95, g: 158, b: 160 }, diameter: 160 },
-        ],
-        rocks: 20,
-        mountains: { qty: 5, type: MOUNTAIN_TYPE_SNOW, },
-        craters: 12,
-        enemies: [  //  Add property to better space out spawns / calculate spawns better
-            { type: UFO_STANDARD, count: 3, waves: 10, speedFactor: 1, },
-            { type: UFO_SCOUT, count: 1, waves: 5, speedFactor: 1, },
-            { type: UFO_BOMBER, count: 1, waves: 1, speedFactor: 1, },
-            { type: UFO_BOSS, count: 1, waves: 1, speedFactor: 1, },
-        ],
-    },
-];
+const LEVEL_NUMBER_TIMEOUT = 120;
 
 class Level {
     static createLevels(levels, sfx, pickups) {
@@ -54,6 +33,7 @@ class Level {
         this.pickups;
         this.playingMusic = true;
         this.bgMusic;
+        this.levelNumberTimeout = 0;
 
         this.scrollPos = 0;
 
@@ -122,25 +102,48 @@ class Level {
             }
 
             //  base(s)
-            var base = new Base();
-            base.initialize(0, this.floorPosY, "left", color(32, 178, 170), color(255, 99, 71));
-            this.bases.push(base);
+            for (var i = 0; i < levelDesigns[idx].bases.length; i++) {
+                var baseDesign = levelDesigns[idx].bases[i];
+                var base = new Base();
+                base.initialize(baseDesign.x == -1 ? this.levelWidth - BASE_FLOOR_WIDTH : baseDesign.x,
+                    this.floorPosY,
+                    baseDesign.type,
+                    color(baseDesign.color.r, baseDesign.color.g, baseDesign.color.b),
+                    color(baseDesign.accentColor.r, baseDesign.accentColor.g, baseDesign.accentColor.b));
+                this.bases.push(base);
+            }
 
             for (var i = 0; i < levelDesigns[idx].enemies.length; i++) {
                 var ufo = levelDesigns[idx].enemies[i];
                 var ufos = UfoSpawner.spawnUfos(this.sfx, this.levelWidth, ufo.type, ufo.count, ufo.waves, ufo.speedFactor, this.floorPosY);
                 this.enemies.push(...ufos);
             }
-
-            //  Test creating a pcikup in the level
-            var pu = Pickup.createRandomPickup(100, 1000, this.floorPosY, 0, this.floorPosY);
-            this.pickups.push(pu);
         };
 
         this.start = function () {
 
             //  Start level bg music
             this.sfx.playSound(this.bgMusic, true);
+
+            var idx = this.levelNumber - 1;
+            for (var i = 0; i < levelDesigns[idx].pickups.length; i++) {
+                for (var j = 0; j < levelDesigns[idx].pickups[i].count; j++)
+                    this.createPickup(levelDesigns[idx].pickups[i]);
+            }
+        };
+
+        this.createPickup = function (pickup) {
+            //  Create a pickup in the level
+            var pu = null, startX = pickup.x;
+            if (pickup.x == -1) {
+                startX = random(width / 2, this.levelWidth);
+            }
+            if (pickup.type == -1)
+                pu = Pickup.createRandomPickup(pickup.dropChance, startX, this.floorPosY, 0, this.floorPosY);
+            else
+                pu = Pickup.createPickup(pickup.type, startX, this.floorPosY, 0, this.floorPosY);
+            if (pu != null)
+                this.pickups.push(pu);
         };
 
         this.restart = function () {
@@ -154,6 +157,7 @@ class Level {
 
             //  Clear state flags
             this.scrollPos = 0;
+            this.levelNumberTimeout = 0;
 
             //  stop all music
             this.stopAllSound();
@@ -167,6 +171,7 @@ class Level {
 
         this.update = function (scrollPos) {
             this.scrollPos = -scrollPos;
+            this.levelNumberTimeout++;
 
             this.updateObjects(this.enemies);
         };
@@ -207,6 +212,14 @@ class Level {
             pop();
 
             this.drawObjects(this.enemies);
+
+
+            if (this.levelNumberTimeout < LEVEL_NUMBER_TIMEOUT) {
+                fill(255, 0, 0, 128);
+                stroke(128, 128, 128, 128);
+                strokeWeight(4);
+                drawTextCentered(`LEVEL ${this.levelNumber}`, (height - 120) / 2, 120);
+            }
         };
 
         this.drawObjects = function (objects) {
@@ -235,5 +248,9 @@ class Level {
                 this.enemies[i].stopAllSound();
             }
         };
+
+        this.completed = function (playerPosition) {
+            return playerPosition.x > this.levelWidth - BASE_FLOOR_WIDTH / 2;
+        }
     }
 }

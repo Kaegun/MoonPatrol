@@ -13,6 +13,14 @@ class Bomb {
         return Bomb.createBomb(BOMB_TYPE_SMALL, x, y, speed, floorPosY, sfx)
     }
 
+    static createMediumBomb(x, y, speed, floorPosY, sfx) {
+        return Bomb.createBomb(BOMB_TYPE_MEDIUM, x, y, speed, floorPosY, sfx)
+    }
+
+    static createLargeBomb(x, y, speed, floorPosY, sfx) {
+        return Bomb.createBomb(BOMB_TYPE_LARGE, x, y, speed, floorPosY, sfx)
+    }
+
     static createBomb(type, x, y, speed, floorPosY, sfx) {
         var b = new Bomb();
         b.initialize(type, x, y, speed, floorPosY, sfx);

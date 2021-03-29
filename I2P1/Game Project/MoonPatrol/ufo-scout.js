@@ -14,7 +14,7 @@ class UfoScout {
 
         this.position;
         this.velocity;
-        this.speed;
+        this.speed = UFO_SCOUT_SPEED;
         this.sfx;
         this.explosion;
         this.state = COLLIDABLE_STATE_ALIVE;
@@ -78,14 +78,13 @@ class UfoScout {
         this.destroy = function () {
             if (this.state == COLLIDABLE_STATE_ALIVE) {
                 this.explosion = new Explosion();
-                this.explosion.initialize(this.position.x, this.position.y, 250, 200);
+                this.explosion.initialize(this.position.x, this.position.y, 250, 90);
                 this.sfx.stopSound(UFO_SCOUT_SFX_FLYBY);
                 this.sfx.playSound("smallExplosion");
 
-                //  spawn a new pickup
-
                 this.state = COLLIDABLE_STATE_DYING;
             }
+            return true;
         };
 
         this.stopAllSound = function () {

@@ -1,6 +1,6 @@
-const BASE_ORIENTATION_LEFT = "left";
-const BASE_ORIENTATION_MIDDLE = "middle";
-const BASE_ORIENTATION_RIGHT = "right";
+const BASE_ORIENTATION_LEFT = 0;
+const BASE_ORIENTATION_MIDDLE = 1;
+const BASE_ORIENTATION_RIGHT = 2;
 const BASE_FLOOR_WIDTH = 500;
 
 class Base {

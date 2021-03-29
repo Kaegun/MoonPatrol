@@ -20,13 +20,15 @@ const GAME_STATE_PLAYING = 1;
 const GAME_STATE_DEAD = 2;
 const GAME_STATE_GAME_OVER = 3;
 const GAME_STATE_WON = 4;
-const GAME_STATE_PAUSED = 5;
+const GAME_STATE_LEVEL_COMPLETE = 5;
+const GAME_STATE_PAUSED = 6;
 
 //  Sound Constants
 const SFX_SOUND_PICKUP_DROPPED = "pickupDropped";
 const SFX_MENU_BG = "menubgmusic";
 const SFX_PLAYER_DEAD_BG = "defeatmusic";
 const SFX_PLAYER_WON_BG = "victorymusic";
+const SFX_PLAYER_LOST_BG = "gameovermusic";
 
 //  Game State
 var activeLevel = 0;
@@ -83,6 +85,27 @@ function setup() {
     buggy.initialize(levels[activeLevel].startX, levels[activeLevel].floorPosY, sfx);
 }
 
+function setNextLevel() {
+    if (++activeLevel >= levels.length) {
+        //  Game complete
+        gameState = GAME_STATE_WON;
+    }
+    else {
+        //  Reset state variables
+        scrollPos = 0;
+        clearArray(pickups);
+        //  Reset the player
+        buggy.reset(levels[activeLevel].startX, levels[activeLevel].floorPosY);
+        //  stop playing music
+        stopGameMusic();
+
+        //  Restart the level
+        levels[activeLevel].start();
+
+        gameState = GAME_STATE_PLAYING;
+    }
+}
+
 function restartLevel() {
 
     //  Reset state variables
@@ -94,11 +117,11 @@ function restartLevel() {
     //  Reset the player
     buggy.reset(levels[activeLevel].startX, levels[activeLevel].floorPosY);
 
-    //  Restart the level
-    levels[activeLevel].restart();
-
     //  stop playing music
     stopGameMusic();
+
+    //  Restart the level
+    levels[activeLevel].restart();
 
     //  set state to playing
     gameState = GAME_STATE_PLAYING;
@@ -107,6 +130,7 @@ function restartLevel() {
 function restartGame() {
     activeLevel = 0;
     score = 0;
+    scrollPos = 0;
     clearArray(pickups);
     clearArray(levels);
     numLevels = Level.createLevels(levels, sfx, pickups);
@@ -116,13 +140,20 @@ function restartGame() {
 }
 
 function stopGameMusic() {
-    //  stop playing death music
+    //  stop playing music
     defeatMusicPlayed = false;
+    levels[activeLevel].stopAllSound();
     if (sfx.isSoundPlaying(SFX_PLAYER_DEAD_BG)) {
         sfx.stopSound(SFX_PLAYER_DEAD_BG);
     }
     if (sfx.isSoundPlaying(SFX_MENU_BG)) {
         sfx.stopSound(SFX_MENU_BG);
+    }
+    if (sfx.isSoundPlaying(SFX_PLAYER_WON_BG)) {
+        sfx.stopSound(SFX_PLAYER_WON_BG);
+    }
+    if (sfx.isSoundPlaying(SFX_PLAYER_LOST_BG)) {
+        sfx.stopSound(SFX_PLAYER_LOST_BG);
     }
 }
 
@@ -132,6 +163,7 @@ function draw() {
         case GAME_STATE_MENU:
             drawMenu();
             break;
+        case GAME_STATE_PAUSED:
         case GAME_STATE_PLAYING:
             drawPlaying();
             break;
@@ -141,11 +173,11 @@ function draw() {
         case GAME_STATE_GAME_OVER:
             drawGameOver();
             break;
+        case GAME_STATE_LEVEL_COMPLETE:
+            drawLevelComplete();
+            break;
         case GAME_STATE_WON:
             drawWon();
-            break;
-        case GAME_STATE_PAUSED:
-            drawPaused();
             break;
     }
 }
@@ -248,9 +280,23 @@ function drawPlaying() {
     buggy.draw();
 
     hud.draw();
+
+    if (gameState == GAME_STATE_PAUSED) {
+        fill(255, 0, 0);
+        stroke(128, 128, 128);
+        strokeWeight(4);
+
+        var startY = (height - 96) / 2;
+        drawTextCentered("PAUSED", startY, 96);
+        startY += 116;
+        strokeWeight(2);
+        drawTextCentered("Press 'Enter' or 'ESC' to continue", startY, 36);
+    }
 }
 
 function drawDead() {
+
+    update();
 
     fill(255, 0, 0);
     stroke(128, 128, 128);
@@ -265,6 +311,8 @@ function drawDead() {
 
 function drawGameOver() {
 
+    update();
+
     fill(255, 0, 0);
     stroke(128, 128, 128);
     strokeWeight(4);
@@ -276,9 +324,35 @@ function drawGameOver() {
     drawTextCentered("Press 'Enter' or 'ESC' to restart the Game", startY, 36);
 }
 
-function drawWon() { }
+function drawLevelComplete() {
 
-function drawPaused() { }
+    console.log('level complete');
+    update();
+
+    fill(255, 0, 0);
+    stroke(128, 128, 128);
+    strokeWeight(4);
+
+    var startY = (height - 96) / 2;
+    drawTextCentered("LEVEL COMPLETE", startY, 96);
+    startY += 116;
+    strokeWeight(2);
+    drawTextCentered("Press 'Enter' or 'ESC' to continue", startY, 36);
+}
+
+function drawWon() {
+    update();
+
+    fill(255, 0, 0);
+    stroke(128, 128, 128);
+    strokeWeight(4);
+
+    var startY = (height - 96) / 2;
+    drawTextCentered("VICTORY", startY, 96);
+    startY += 116;
+    strokeWeight(2);
+    drawTextCentered("Press 'Enter' or 'ESC' to start a new Game", startY, 36);
+}
 
 function checkCollisions() {
     for (var i = 0; i < levels[activeLevel].enemies.length; i++) {
@@ -310,19 +384,21 @@ function checkCollisions() {
 function checkEnemyCollision(enemy, projectiles) {
     for (var i = projectiles.length - 1; i >= 0; i--) {
         if (Collidable.collision(enemy, projectiles[i].position)) {
+            //  Enemy may have more than 1 health point, then it won't destroy
             projectiles.splice(i, 1);
-            enemy.destroy();
-            score += enemy.scoreValue;
-            if (enemy.dropsPickup) {
-                //  Assume the pickup dropped is random
-                var pu = Pickup.createRandomPickup(enemy.dropChance,
-                    enemy.position.x + scrollPos,
-                    enemy.position.y,
-                    enemy.speed,
-                    levels[activeLevel].floorPosY);
-                if (pu) {
-                    sfx.playSound(SFX_SOUND_PICKUP_DROPPED);
-                    pickups.push(pu);
+            if (enemy.destroy()) {
+                score += enemy.scoreValue;
+                if (enemy.dropsPickup) {
+                    //  Assume the pickup dropped is random
+                    var pu = Pickup.createRandomPickup(enemy.dropChance,
+                        enemy.position.x + scrollPos,
+                        enemy.position.y,
+                        enemy.speed,
+                        levels[activeLevel].floorPosY);
+                    if (pu) {
+                        sfx.playSound(SFX_SOUND_PICKUP_DROPPED);
+                        pickups.push(pu);
+                    }
                 }
             }
         }
@@ -344,6 +420,10 @@ function checkEnemyCollision(enemy, projectiles) {
 
 function update() {
 
+    //  don't update when paused
+    if (gameState == GAME_STATE_PAUSED)
+        return;
+
     //  call update on all objects to update positions
     buggy.update(scrollPos);
 
@@ -358,18 +438,30 @@ function update() {
         scrollPos += this.buggy.speed;
         updateObjects(pickups);
         levels[activeLevel].update(scrollPos);
+        if (levels[activeLevel].completed(buggy.worldPosition)) {
+            gameState = activeLevel == levels.length - 1 ? GAME_STATE_WON : GAME_STATE_LEVEL_COMPLETE;
+            if (!sfx.isSoundPlaying(SFX_PLAYER_WON_BG)) {
+                stopGameMusic();
+                sfx.playSound(SFX_PLAYER_WON_BG);
+            }
+        }
     }
     else {
         gameState = buggy.lives == 0 ? GAME_STATE_GAME_OVER : GAME_STATE_DEAD;
         levels[activeLevel].stopAllSound();
-        if (!sfx.isSoundPlaying(SFX_PLAYER_DEAD_BG)) {
-            if (!defeatMusicPlayed) {
-                sfx.playSound(SFX_PLAYER_DEAD_BG);
-                defeatMusicPlayed = true;
-            }
-            else if (!sfx.isSoundPlaying(SFX_MENU_BG)) {
-                sfx.playSound(SFX_MENU_BG);
-            }
+        playDefeatMusic();
+    }
+}
+
+function playDefeatMusic() {
+    var defeatLoop = gameState == GAME_STATE_GAME_OVER ? SFX_PLAYER_LOST_BG : SFX_MENU_BG;
+    if (!sfx.isSoundPlaying(SFX_PLAYER_DEAD_BG)) {
+        if (!defeatMusicPlayed) {
+            sfx.playSound(SFX_PLAYER_DEAD_BG);
+            defeatMusicPlayed = true;
+        }
+        else if (!sfx.isSoundPlaying(defeatLoop)) {
+            sfx.playSound(defeatLoop);
         }
     }
 }
@@ -409,6 +501,9 @@ function keyPressed() {
         case GAME_STATE_PLAYING:
             keyPressedPlaying();
             break;
+        case GAME_STATE_PAUSED:
+            keyPressedPaused();
+            break;
         case GAME_STATE_DEAD:
             keyPressedDead();
             break;
@@ -417,6 +512,9 @@ function keyPressed() {
             break;
         case GAME_STATE_WON:
             keyPressedWon();
+            break;
+        case GAME_STATE_LEVEL_COMPLETE:
+            keyPressedLevelComplete();
             break;
         case GAME_STATE_PAUSED:
             keyPressedPaused();
@@ -499,6 +597,18 @@ function keyPressedPlaying() {
     }
 }
 
+function keyPressedPaused() {
+    switch (keyCode) {
+        case KEY_ESC:
+        case KEY_ENTER:
+            //  Restart the level
+            gameState = GAME_STATE_PLAYING;
+            break;
+        default:
+            break;
+    }
+}
+
 function keyPressedDead() {
     switch (keyCode) {
         case KEY_ESC:
@@ -523,12 +633,24 @@ function keyPressedGameOver() {
     }
 }
 
+function keyPressedLevelComplete() {
+    switch (keyCode) {
+        case KEY_ESC:
+        case KEY_ENTER:
+            //  Restart the level
+            setNextLevel();
+            break;
+        default:
+            break;
+    }
+}
+
 function keyPressedWon() {
     switch (keyCode) {
         case KEY_ESC:
         case KEY_ENTER:
             //  Restart the level
-            startLevel();
+            restartGame();
             break;
         default:
             break;
