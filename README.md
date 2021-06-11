@@ -54,3 +54,6 @@ extraction of common elements to methods and helpers would be appropriate. Again
 
 # Summary
 Overall, I am happy with what I was able to achieve, especially since it is my first *complete* game.
+
+# Deployed
+The deployed game can be found here:- https://uoli2p1moonpatrol.z6.web.core.windows.net/
